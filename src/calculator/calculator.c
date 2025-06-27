@@ -188,9 +188,9 @@ float parseString(char* str, calculatorErr* error){
                 break;
             }
             
-            printStack();
-            float a = popFromStack(error);
+            //printStack();
             float b = popFromStack(error);
+            float a = popFromStack(error);
             float res = operation(a,b, error);
 
             pushToStack(res);

@@ -1,0 +1,3 @@
+-I./include
+-I./third_party
+-DRELEASE

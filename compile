@@ -1,0 +1,27 @@
+#!/bin/bash
+set -e
+
+# Busca archivos fuente
+TARGET_FILES=$(find src -name '*.c')
+
+# Incluye los paquetes con headers privados
+PRIVATE_INCLUDE_DIRS=$(find src -name '*.h' -exec dirname {} \; | sort -u)
+PRIVATE_HEADERS=""
+for dir in $PRIVATE_INCLUDE_DIRS; do
+    PRIVATE_HEADERS="$PRIVATE_HEADERS -I $dir"
+done
+
+INCLUDE_DIRS="-I include"
+BUILD_TARGET="build/strCalc"
+ADITIONAL_FLAGS="-g"
+
+mkdir -p build
+
+# Compila
+gcc -DRELEASE $TARGET_FILES $INCLUDE_DIRS $PRIVATE_HEADERS $ADITIONAL_FLAGS -o $BUILD_TARGET
+
+# Ejecuta
+if [ "$1" == "-r" ] || [ "$1" == "--run" ]
+then
+    ./$BUILD_TARGET
+fi

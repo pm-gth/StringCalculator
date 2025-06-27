@@ -1,0 +1,45 @@
+#!/bin/bash
+
+# Verifica que se pasó un archivo
+if [ $# -lt 1 ]; then
+    echo "Use: $0 archivo.c [--verbose|-v]"
+    exit 1
+fi
+
+archivo="$1"
+verbose=0
+
+if [ "$2" == "--verbose" ] || [ "$2" == "-v" ]; then
+    verbose=1
+fi
+
+# Funciones definidas (líneas no comentadas que definen funciones test)
+all_tests=$(grep -E '^\s*void\s+[a-zA-Z0-9_]+\s*\(\s*void\s*\)\s*{' "$archivo" | grep -v '//' \
+    | sed -E 's/^\s*void\s+([a-zA-Z0-9_]+)\s*\(.*\).*/\1/' \
+    | grep -vE '^(setUp|tearDown|main)$' \
+    | sort)
+
+# RUN_TESTs en main que NO están comentados (ignora líneas que tengan // antes)
+called_tests=$(grep -E '^[^/]*RUN_TEST\s*\(\s*[a-zA-Z0-9_]+\s*\)' "$archivo" \
+    | sed -E 's/.*RUN_TEST\s*\(\s*([a-zA-Z0-9_]+)\s*\).*/\1/' \
+    | sort)
+
+if [ $verbose -eq 1 ]; then
+    echo "== DEFINED TESTS =="
+    echo "$all_tests"
+    echo "== CALLED TESTS =="
+    echo "$called_tests"
+fi
+
+# Detectar tests definidos pero no llamados
+missing=$(comm -23 <(echo "$all_tests") <(echo "$called_tests"))
+
+if [ -n "$missing" ]; then
+    echo -e "\033[1;33mFound defined tests not ran by main():\033[0m"
+    while read -r testname; do
+        echo "$archivo:$testname:NOT_RAN"
+    done <<< "$missing"
+    exit 1
+else
+    exit 0
+fi

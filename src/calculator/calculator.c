@@ -210,8 +210,12 @@ char* formatOperation(char* str, calculatorErr* error){
         return NULL;
     }
 
+    bool lastWasBlank = false;
     for(int i = 0; str[i] != '\0'; i++){
-        if(str[i] != ' '){
+        if(str[i] == ' ' && lastWasBlank){
+            //Skip this
+        } else{
+            lastWasBlank = (str[i] == ' ')? true : false;
             buffer[bufferIndex] = str[i];
             bufferIndex++;
 
@@ -264,5 +268,13 @@ void printStack(void){
         printf("{[%d] %f}\n", j, stackPointer[i]);
         j++;
     }
+}
+
+void resetStack(calculatorErr* error){
+    free(stackPointer);
+    stackIndex = 0;
+    stackSize = 5;
+
+    initStack(error);
 }
 

@@ -45,31 +45,38 @@ void getFullNumber_expands_numbers_correctly(void) {
 
 void parseString_does_operation_correctly(void){
     calculatorErr* error = newError();
-    char* str1 = "1+2";
-    char* str2 = "4.2    /2";
-    char* str3 = "1.07    +           6         ";
+    initStack(error);
+
+    char* str1 = "1 2 +";
+    char* str2 = "4.2    2 /";
+    char* str3 = "1.07               6        + ";
     char* str4 = "3    +       ";
-    char* str5 = "1 23 +";
+    char* str5 = "1 + 23 ";
 
     clearError(error);
     TEST_ASSERT_FLOAT_WITHIN(0.0001f, 3, parseString(str1, error));
     TEST_ASSERT_FALSE(error->raised);
+    resetStack(error);
 
     clearError(error);
     TEST_ASSERT_FLOAT_WITHIN(0.0001f, 2.1, parseString(str2, error));
     TEST_ASSERT_FALSE(error->raised);
+    resetStack(error);
 
     clearError(error);
     TEST_ASSERT_FLOAT_WITHIN(0.0001f, 7.07, parseString(str3, error));
     TEST_ASSERT_FALSE(error->raised);
+    resetStack(error);
 
     clearError(error);
     parseString(str4, error);
     TEST_ASSERT_TRUE(error->raised);
+    resetStack(error);
 
     clearError(error);
     parseString(str5, error);
     TEST_ASSERT_TRUE(error->raised);
+    resetStack(error);
 
     clearError(error);
     free(error);
@@ -101,10 +108,10 @@ void stack_works_propperly(void){
         pushToStack(list[i]);
     }
 
-    TEST_ASSERT_FLOAT_WITHIN(0.0001f, 4, popFromStack());
-    TEST_ASSERT_FLOAT_WITHIN(0.0001f, 3, popFromStack());
-    TEST_ASSERT_FLOAT_WITHIN(0.0001f, 2, popFromStack());
-    TEST_ASSERT_FLOAT_WITHIN(0.0001f, 1, popFromStack());
+    TEST_ASSERT_FLOAT_WITHIN(0.0001f, 4, popFromStack(error));
+    TEST_ASSERT_FLOAT_WITHIN(0.0001f, 3, popFromStack(error));
+    TEST_ASSERT_FLOAT_WITHIN(0.0001f, 2, popFromStack(error));
+    TEST_ASSERT_FLOAT_WITHIN(0.0001f, 1, popFromStack(error));
     TEST_ASSERT_FALSE(error->raised);
 }
 

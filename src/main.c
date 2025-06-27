@@ -29,6 +29,7 @@ int main(void){
         }
 
         printf("%s = %f\n", formattedInput, res);
+        resetStack(error);
         free(input);
         free(formattedInput);
     }

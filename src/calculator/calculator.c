@@ -85,7 +85,7 @@ float getFullNumber(char* str, int pos, calculatorErr* error){
         return -1;
         }
 
-    while(isNumber(str[pos])){
+    while(isNumber(str[pos]) && str[pos] != '\0'){
         buffer[bufferIndex++] = str[pos++];
 
         if(bufferIndex >= initialBufferSize){
@@ -156,8 +156,8 @@ float power(float base, float exponent, calculatorErr* error){
 float parseString(char* str, calculatorErr* error){
     for(int i = 0; str[i] != '\0'; i++){
         if(isNumber(str[i])){
-            int number = getFullNumber(str, i, error);
-            while(isNumber(str[i])) i++;
+            float number = getFullNumber(str, i, error);
+            while(isNumber(str[i]) && str[i] != '\0') i++;
             pushToStack(number);
         } else if(isOperator(str[i])){
             if(stackIndex < 2){
@@ -187,12 +187,15 @@ float parseString(char* str, calculatorErr* error){
                 operation = power;
                 break;
             }
-
-            int a = popFromStack(error);
-            int b = popFromStack(error);
-            int res = operation(a,b, error);
+            
+            printStack();
+            float a = popFromStack(error);
+            float b = popFromStack(error);
+            float res = operation(a,b, error);
 
             pushToStack(res);
+        } else if(str[i] != ' '){
+            setError(error, "parseString: error, unknown character %c", str[i]);
         }
     }
     return popFromStack(error);
@@ -228,7 +231,7 @@ char* formatOperation(char* str, calculatorErr* error){
 }
 
 void initStack(calculatorErr* error){
-    stackPointer = malloc(sizeof(int)*stackSize);
+    stackPointer = malloc(sizeof(float)*stackSize);
 
     if(!stackPointer){
         setError(error, "initStack: error, could not allocate initial buffer");
@@ -241,18 +244,25 @@ void pushToStack(float value){
 
     if(stackIndex >= stackSize){
         stackSize*=2;
-        stackPointer = realloc(stackPointer, stackSize);
+        stackPointer = realloc(stackPointer, sizeof(float) * stackSize);
     }
 }
 
 float popFromStack(calculatorErr* error){
-    stackIndex--;
-
-    if(stackIndex < 0){
+    if (stackIndex <= 0) {
         setError(error, "popFromStack: error, tried to pop empty stack");
+        return 0.0f;
     }
-    int value = stackPointer[stackIndex];
 
-    return value;
+    stackIndex--;
+    return stackPointer[stackIndex];
+}
+
+void printStack(void){
+    int j = 0;
+    for(int i = stackIndex; i >= 0; i--){
+        printf("{[%d] %f}\n", j, stackPointer[i]);
+        j++;
+    }
 }
 

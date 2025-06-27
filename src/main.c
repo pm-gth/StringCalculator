@@ -16,6 +16,7 @@ int main(void){
     char* input;
     char* formattedInput;
     float res;
+    initStack(error);
 
     while(true){
         input = readString();

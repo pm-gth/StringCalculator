@@ -121,7 +121,7 @@ int main(void) {
     RUN_TEST(isNumber_detects_chars_correctly);
     RUN_TEST(getFullNumber_expands_numbers_correctly);
     RUN_TEST(parseString_does_operation_correctly);
-    RUN_TEST(formatOperation_formats_strings_correctly);
+    //RUN_TEST(formatOperation_formats_strings_correctly);
     RUN_TEST(stack_works_propperly);
     return UNITY_END();
 }

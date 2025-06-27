@@ -158,6 +158,7 @@ float parseString(char* str, calculatorErr* error){
         if(isNumber(str[i])){
             float number = getFullNumber(str, i, error);
             while(isNumber(str[i]) && str[i] != '\0') i++;
+            i--; //TODO: Change this half-assed fix
             pushToStack(number);
         } else if(isOperator(str[i])){
             if(stackIndex < 2){

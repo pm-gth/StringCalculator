@@ -24,6 +24,6 @@ float parseString(char* str, calculatorErr* error);
 char* formatOperation(char* str, calculatorErr* error);
 void initStack(calculatorErr*);
 void pushToStack(float value);
-float popFromStack(void);
+float popFromStack(calculatorErr* error);
 
 #endif

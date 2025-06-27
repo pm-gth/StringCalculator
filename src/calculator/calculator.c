@@ -154,73 +154,48 @@ float power(float base, float exponent, calculatorErr* error){
 }
 
 float parseString(char* str, calculatorErr* error){
-    bool firstOpFound = false;
-    bool operatorFound = false;
-    float firstOp;
-    float secondOp;
-    float res = 0;
-    float (*operation)(float, float, calculatorErr*);
-
     for(int i = 0; str[i] != '\0'; i++){
-        if(str[i] != ' '){
-            //Found an operator, select the corresponding operation()
-            if(isOperator(str[i]) && !operatorFound){
-                operatorFound = true;
-                switch(str[i]){
-                    case '+':
-                        operation = add;
-                        break;
-                    case '-':
-                        operation = sub;
-                        break;
-                    case '*':
-                        operation = mul;
-                        break;
-                    case '/':
-                        operation = divi;
-                        break;
-                    case '%':
-                        operation = mod;
-                        break;
-                    case '^':
-                        operation = power;
-                        break;
-                }
-            } else if(isNumber(str[i])){
-                //Store the first operand
-                if(!firstOpFound){
-                    firstOp = getFullNumber(str, i, error);
-                    if(error->raised){
-                        return res;
-                    }
-                    firstOpFound = true;
-
-                    //Skip the rest of the number
-                    while(isNumber(str[i+1])){
-                        i++;
-                    }
-
-                //Stores the second operand and return result
-                } else if(firstOpFound && operatorFound){
-                    secondOp = getFullNumber(str, i, error);
-
-                    return res = operation(firstOp, secondOp, error);
-
-                //Found a second operand but doesn't have an operator, return with err code
-                } else{
-                    setError(error, "parseString: error, two operands but no operator");
-                    return res;
-                }
-            //Strange character found
-            } else{
-                setError(error, "parseString: error, unsupported character '%c' found", str[i]);
-                return res;
+        if(isNumber(str[i])){
+            int number = getFullNumber(str, i, error);
+            while(isNumber(str[i])) i++;
+            pushToStack(number);
+        } else if(isOperator(str[i])){
+            if(stackIndex < 2){
+                setError(error, "parseString: error, not enough operands in stack for %c operation", str[i]);
+                return -1;
             }
+            
+            float (*operation)(float, float, calculatorErr*);
+
+            switch(str[i]){
+                case '+':
+                operation = add;
+                break;
+                case '-':
+                operation = sub;
+                break;
+                case '*':
+                operation = mul;
+                break;
+                case '/':
+                operation = divi;
+                break;
+                case '%':
+                operation = mod;
+                break;
+                case '^':
+                operation = power;
+                break;
+            }
+
+            int a = popFromStack(error);
+            int b = popFromStack(error);
+            int res = operation(a,b, error);
+
+            pushToStack(res);
         }
     }
-    //String ended before finding all operands
-    setError(error, "parseString: error, incomplete string");
-    return res;
+    return popFromStack(error);
 }
 
 char* formatOperation(char* str, calculatorErr* error){
@@ -270,8 +245,12 @@ void pushToStack(float value){
     }
 }
 
-float popFromStack(void){
+float popFromStack(calculatorErr* error){
     stackIndex--;
+
+    if(stackIndex < 0){
+        setError(error, "popFromStack: error, tried to pop empty stack");
+    }
     int value = stackPointer[stackIndex];
 
     return value;

@@ -124,3 +124,35 @@ int stringCopy(char* str1, char* str2){
 
     return 0;
 }
+
+//Splits string (both upper and lower positions are included)
+char* stringSplicer(char* str, int lowerSplitPos, int upperSplitPos){
+    if(lowerSplitPos > upperSplitPos){
+        return NULL;
+    }
+
+    int size = stringSize(str);
+    if(lowerSplitPos >= size || upperSplitPos >= size){
+        return NULL;
+    }
+
+    //First pass to get subtring's size
+    int noOfChars = 0;
+    for(int i = lowerSplitPos; i <= upperSplitPos && str[i] != '\0'; i++){
+        noOfChars++;
+    }
+
+    char* subString = malloc(sizeof(char)*(noOfChars+1)); //Plus one for '\0'
+    if(!subString){
+        return NULL;
+    }
+
+    int subStringIndex = 0;
+    for(int i = lowerSplitPos; i <= upperSplitPos && str[i] != '\0'; i++){
+        subString[subStringIndex] = str[i];
+        subStringIndex++;
+    }
+    subString[subStringIndex] = '\0';
+    
+    return subString;
+}

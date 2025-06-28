@@ -289,5 +289,21 @@ void resetStack(calculatorErr* error){
 }
 
 void infixCalc(char* str, calculatorErr* error){
-    ;
+    for(int i = 0; str[i] != '\0'; i++){
+        if(str[i] == '('){
+            //Entered inside parenthesis, skip it
+            while(str[i] != ')' && str[i] != '\0') i++;
+            if(str[i] == '\0'){
+                setError(error, "infixCalc: error, found uncoupled parenthesis");
+                return;
+            }
+        } else if(isOperator(str[i])){
+            //Found External operator, create a tree from it, then split the string
+            operationNode* parentNode = malloc(sizeof(operationNode));
+            if(!parentNode){
+                setError(error, "infixCalc: error, could not allocate memory");
+                return;
+            }
+        }
+    }
 }

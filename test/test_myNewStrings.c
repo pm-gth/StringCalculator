@@ -2,6 +2,7 @@
 
 #include "unity.h"
 #include "myNewStrings.h"
+#include "unity_internals.h"
 
 void setUp(void) {
     // Se ejecuta antes de cada test
@@ -79,6 +80,14 @@ void stof_transforms_correctly(void){
     TEST_ASSERT_FLOAT_WITHIN(0.0001f, 0.0234, stof("0.0234"));
 }
 
+void stringSplicer_splits_correctly(void){
+    char str[] = "Hello World";
+    
+    TEST_ASSERT_EQUAL_STRING("Hello World", stringSplicer(str, 0, 10));
+    TEST_ASSERT_EQUAL_STRING("Hello", stringSplicer(str, 0, 4));
+    TEST_ASSERT_EQUAL_STRING("H", stringSplicer(str, 0, 0));
+}
+
 int main(void) {
     UNITY_BEGIN();
     RUN_TEST(string_size_gives_right_length);
@@ -92,5 +101,6 @@ int main(void) {
     RUN_TEST(toUpper_in_empty_string);
     RUN_TEST(stringCopy_gives_same_strings);
     RUN_TEST(stof_transforms_correctly);
+    RUN_TEST(stringSplicer_splits_correctly);
     return UNITY_END();
 }

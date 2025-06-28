@@ -2,6 +2,7 @@
 #include<stdlib.h>
 
 #include"calculator.h"
+#include"privateCalculator.h"
 #include"myNewStrings.h"
 
 /*
@@ -10,7 +11,7 @@
  hay un release de verdad y no un test
 */
  
-#ifdef RELEASE
+#ifdef NOTUSING
 int main(void){
     calculatorErr* error = newError();
     char* input;
@@ -38,3 +39,17 @@ int main(void){
     return 0;
 }
 #endif
+
+#ifdef RELEASE
+int main(void){
+    calculatorErr* error = newError();
+    char* input = "(2+(5-4))*(3+4)";
+    printf("%s\n", input);
+    operationNode* treeRoot;
+    buildBinTree(input, &treeRoot, error);
+    printTree(treeRoot, 0);
+
+    return 0;
+}
+#endif
+

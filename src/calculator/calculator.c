@@ -288,22 +288,108 @@ void resetStack(calculatorErr* error){
     initStack(error);
 }
 
-void infixCalc(char* str, calculatorErr* error){
+bool isAtomic(char* str){
+    bool isAtomic = true;
+
     for(int i = 0; str[i] != '\0'; i++){
-        if(str[i] == '('){
-            //Entered inside parenthesis, skip it
-            while(str[i] != ')' && str[i] != '\0') i++;
-            if(str[i] == '\0'){
+        if(str[i] != ' ' && !isNumber(str[i])){
+            isAtomic = false;
+        }
+    }
+
+    return isAtomic;
+}
+
+#include <string.h>
+
+//Sustituir por cod limpio
+char* removeWrappingParennthesis(char* str) {
+    int size = strlen(str);
+    if (size >= 2 && str[0] == '(' && str[size - 1] == ')') {
+        // Crear un nuevo string sin los paréntesis envolventes
+        char* newStr = malloc(size - 1);
+        if (!newStr) return NULL;  // manejar error
+        memcpy(newStr, str + 1, size - 2);
+        newStr[size - 2] = '\0';
+        return newStr;
+    } else {
+        // No hay paréntesis envolventes, devolver copia directa
+        return strdup(str);
+    }
+}
+
+void buildBinTree(char* str, operationNode** nodeRoot, calculatorErr* error) {
+    int level = 0;
+    int size = stringSize(str);
+
+    for (int i = 0; i < size; i++) {
+        if (str[i] == '(') {
+            level++;
+        } else if (str[i] == ')') {
+            level--;
+            if (level < 0) {
                 setError(error, "infixCalc: error, found uncoupled parenthesis");
                 return;
             }
-        } else if(isOperator(str[i])){
-            //Found External operator, create a tree from it, then split the string
-            operationNode* parentNode = malloc(sizeof(operationNode));
-            if(!parentNode){
+        } else if (isOperator(str[i]) && level == 0) {
+            // Aquí está el operador externo
+            *nodeRoot = malloc(sizeof(operationNode));
+            if (!*nodeRoot) {
                 setError(error, "infixCalc: error, could not allocate memory");
                 return;
             }
+            (*nodeRoot)->operation = parseOperator(str[i], error);
+            (*nodeRoot)->atomicA = 0;
+            (*nodeRoot)->atomicB = 0;
+            (*nodeRoot)->operandA = NULL;
+            (*nodeRoot)->operandB = NULL;
+            (*nodeRoot)->operatorChar = str[i];
+
+            char* firstHalf = stringSplicer(str, 0, i-1);
+            char* secondHalf = stringSplicer(str, i+1, size-1);
+
+            if (isAtomic(firstHalf)) {
+                (*nodeRoot)->atomicA = getFullNumber(firstHalf, 0, error);
+            } else {
+                firstHalf = removeWrappingParennthesis(firstHalf);
+                printf("%s\n", firstHalf);
+                buildBinTree(firstHalf, &((*nodeRoot)->operandA), error);
+            }
+
+            if (isAtomic(secondHalf)) {
+                (*nodeRoot)->atomicB = getFullNumber(secondHalf, 0, error);
+            } else {
+                secondHalf = removeWrappingParennthesis(secondHalf);
+                printf("%s\n", secondHalf);
+                buildBinTree(secondHalf, &((*nodeRoot)->operandB), error);
+            }
+
+            free(firstHalf);
+            free(secondHalf);
+            return;
         }
     }
 }
+
+//Sustituir por cod limpio
+void printTree(operationNode* root, int level) {
+    if (!root) {
+        for (int i = 0; i < level; i++) printf("    ");
+        printf("EMPTY_BRANCH\n");
+        return;
+    }
+
+    // Imprimir nodo con indentación
+    for (int i = 0; i < level; i++) printf("    ");
+    printf("oper: %c, atmA: %.2f, atmB: %.2f\n", root->operatorChar, root->atomicA, root->atomicB);
+
+    // Imprimir rama izquierda (operandA)
+    printTree(root->operandA, level + 1);
+
+    // Imprimir rama derecha (operandB)
+    printTree(root->operandB, level + 1);
+}
+
+
+
+

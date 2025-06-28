@@ -8,7 +8,7 @@
  No se pueden tener varios main en la misma unidad de compilación, como en los test
  hago gcc src/'*.c cubro este main() con el flag RELEASE para que solo se compile cuando
  hay un release de verdad y no un test
- */
+*/
  
 #ifdef RELEASE
 int main(void){
@@ -19,6 +19,7 @@ int main(void){
     initStack(error);
 
     while(true){
+        printf("Imput an operation:\n");
         input = readString();
         res = revPolishCalc(input, error);
         formattedInput = formatOperation(input, error);

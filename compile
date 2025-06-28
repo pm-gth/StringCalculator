@@ -11,7 +11,7 @@ for dir in $PRIVATE_INCLUDE_DIRS; do
     PRIVATE_HEADERS="$PRIVATE_HEADERS -I $dir"
 done
 
-INCLUDE_DIRS="-I include"
+INCLUDE_DIRS="-I include -I src/calculator"
 BUILD_TARGET="build/strCalc"
 ADITIONAL_FLAGS="-g"
 

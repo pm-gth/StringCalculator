@@ -1,6 +1,6 @@
 #include "unity.h"
 #include "fff.h"
-#include "calculator.h"
+#include "privateCalculator.h"
 
 #include<stdlib.h>
 
@@ -52,6 +52,7 @@ void parseString_does_operation_correctly(void){
     char* str3 = "1.07               6        + ";
     char* str4 = "3    +       ";
     char* str5 = "1 + 23 ";
+    char* str6 = "10 5 - 1 1 + * 1 1 + /";
 
     clearError(error);
     TEST_ASSERT_FLOAT_WITHIN(0.0001f, 3, revPolishCalc(str1, error));
@@ -76,6 +77,11 @@ void parseString_does_operation_correctly(void){
     clearError(error);
     revPolishCalc(str5, error);
     TEST_ASSERT_TRUE(error->raised);
+    resetStack(error);
+
+    clearError(error);
+    TEST_ASSERT_FLOAT_WITHIN(0.0001f, 5, revPolishCalc(str6, error));
+    TEST_ASSERT_FALSE(error->raised);
     resetStack(error);
 
     clearError(error);
@@ -115,7 +121,7 @@ void stack_works_propperly(void){
     TEST_ASSERT_FALSE(error->raised);
 }
 
-int main(void) {
+int main(void){
     UNITY_BEGIN();
     RUN_TEST(isOperator_detects_chars_correctly);
     RUN_TEST(isNumber_detects_chars_correctly);

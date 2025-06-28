@@ -1,8 +1,9 @@
+#include "calculator.h"
 #include<stdlib.h>
 #include<stdio.h>
 #include<stdarg.h>
 
-#include"calculator.h"
+#include"privateCalculator.h"
 #include"myNewStrings.h"
 
 const char OPERATORS[] = {'+', '-', '*', '/', '^', '%', '\0'};
@@ -153,6 +154,35 @@ float power(float base, float exponent, calculatorErr* error){
     return result;
 }
 
+operation_t parseOperator(char operator, calculatorErr* error){
+    operation_t operation;
+
+    switch(operator){
+        case '+':
+            operation = add;
+            break;
+        case '-':
+            operation = sub;
+            break;
+        case '*':
+            operation = mul;
+            break;
+        case '/':
+            operation = divi;
+            break;
+        case '%':
+            operation = mod;
+            break;
+        case '^':
+            operation = power;
+            break;
+        default:
+            setError(error, "parseOperator: error, %c is a non-valid operator", operator);
+            break;
+    }
+    return operation;
+}
+
 float revPolishCalc(char* str, calculatorErr* error){
     for(int i = 0; str[i] != '\0'; i++){
         if(isNumber(str[i])){
@@ -166,28 +196,7 @@ float revPolishCalc(char* str, calculatorErr* error){
                 return -1;
             }
             
-            float (*operation)(float, float, calculatorErr*);
-
-            switch(str[i]){
-                case '+':
-                operation = add;
-                break;
-                case '-':
-                operation = sub;
-                break;
-                case '*':
-                operation = mul;
-                break;
-                case '/':
-                operation = divi;
-                break;
-                case '%':
-                operation = mod;
-                break;
-                case '^':
-                operation = power;
-                break;
-            }
+            operation_t operation = parseOperator(str[i], error);
             
             //printStack();
             float b = popFromStack(error);
@@ -279,3 +288,6 @@ void resetStack(calculatorErr* error){
     initStack(error);
 }
 
+void infixCalc(char* str, calculatorErr* error){
+    ;
+}

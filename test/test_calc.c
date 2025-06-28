@@ -54,27 +54,27 @@ void parseString_does_operation_correctly(void){
     char* str5 = "1 + 23 ";
 
     clearError(error);
-    TEST_ASSERT_FLOAT_WITHIN(0.0001f, 3, parseString(str1, error));
+    TEST_ASSERT_FLOAT_WITHIN(0.0001f, 3, revPolishCalc(str1, error));
     TEST_ASSERT_FALSE(error->raised);
     resetStack(error);
 
     clearError(error);
-    TEST_ASSERT_FLOAT_WITHIN(0.0001f, 2.1, parseString(str2, error));
+    TEST_ASSERT_FLOAT_WITHIN(0.0001f, 2.1, revPolishCalc(str2, error));
     TEST_ASSERT_FALSE(error->raised);
     resetStack(error);
 
     clearError(error);
-    TEST_ASSERT_FLOAT_WITHIN(0.0001f, 7.07, parseString(str3, error));
+    TEST_ASSERT_FLOAT_WITHIN(0.0001f, 7.07, revPolishCalc(str3, error));
     TEST_ASSERT_FALSE(error->raised);
     resetStack(error);
 
     clearError(error);
-    parseString(str4, error);
+    revPolishCalc(str4, error);
     TEST_ASSERT_TRUE(error->raised);
     resetStack(error);
 
     clearError(error);
-    parseString(str5, error);
+    revPolishCalc(str5, error);
     TEST_ASSERT_TRUE(error->raised);
     resetStack(error);
 

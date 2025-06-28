@@ -20,7 +20,7 @@ int main(void){
 
     while(true){
         input = readString();
-        res = parseString(input, error);
+        res = revPolishCalc(input, error);
         formattedInput = formatOperation(input, error);
 
         if(error->raised){

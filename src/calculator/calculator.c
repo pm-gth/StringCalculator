@@ -153,7 +153,7 @@ float power(float base, float exponent, calculatorErr* error){
     return result;
 }
 
-float parseString(char* str, calculatorErr* error){
+float revPolishCalc(char* str, calculatorErr* error){
     for(int i = 0; str[i] != '\0'; i++){
         if(isNumber(str[i])){
             float number = getFullNumber(str, i, error);
@@ -162,7 +162,7 @@ float parseString(char* str, calculatorErr* error){
             pushToStack(number);
         } else if(isOperator(str[i])){
             if(stackIndex < 2){
-                setError(error, "parseString: error, not enough operands in stack for %c operation", str[i]);
+                setError(error, "revPolishCalc: error, not enough operands in stack for %c operation", str[i]);
                 return -1;
             }
             
@@ -196,7 +196,7 @@ float parseString(char* str, calculatorErr* error){
 
             pushToStack(res);
         } else if(str[i] != ' '){
-            setError(error, "parseString: error, unknown character %c", str[i]);
+            setError(error, "revPolishCalc: error, unknown character %c", str[i]);
         }
     }
     return popFromStack(error);

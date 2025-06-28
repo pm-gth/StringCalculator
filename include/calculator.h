@@ -20,7 +20,7 @@ float mul(float a, float b, calculatorErr* error);
 float divi(float a, float b, calculatorErr* error);
 float mod(float a, float b, calculatorErr* error);
 float power(float base, float exponent, calculatorErr* error);
-float parseString(char* str, calculatorErr* error);
+float revPolishCalc(char* str, calculatorErr* error);
 char* formatOperation(char* str, calculatorErr* error);
 void initStack(calculatorErr*);
 void pushToStack(float value);

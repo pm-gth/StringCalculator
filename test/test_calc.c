@@ -88,23 +88,6 @@ void parseString_does_operation_correctly(void){
     free(error);
 }
 
-void formatOperation_formats_strings_correctly(void){
-    calculatorErr* error = newError();
-    char* str1 = "23         +6";
-    char* str2 = "5+5";
-
-    clearError(error);
-    TEST_ASSERT_EQUAL_STRING("23+6",formatOperation(str1, error));
-    TEST_ASSERT_FALSE(error->raised);
-
-    clearError(error);
-    TEST_ASSERT_EQUAL_STRING("5+5",formatOperation(str2, error));
-    TEST_ASSERT_FALSE(error->raised);
-
-    clearError(error);
-    free(error);
-}
-
 void stack_works_propperly(void){
     calculatorErr* error = newError();
     initStack(error);
@@ -127,7 +110,6 @@ int main(void){
     RUN_TEST(isNumber_detects_chars_correctly);
     RUN_TEST(getFullNumber_expands_numbers_correctly);
     RUN_TEST(parseString_does_operation_correctly);
-    //RUN_TEST(formatOperation_formats_strings_correctly);
     RUN_TEST(stack_works_propperly);
     return UNITY_END();
 }

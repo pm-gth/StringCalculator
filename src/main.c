@@ -11,8 +11,7 @@
  hay un release de verdad y no un test
 */
  
-#ifdef NOTUSING
-int main(void){
+int startRevPolishCalc(void){
     calculatorErr* error = newError();
     char* input;
     char* formattedInput;
@@ -30,7 +29,7 @@ int main(void){
             return 1;
         }
 
-        printf("%s = %f\n", formattedInput, res);
+        printf("%s = %.2f\n", formattedInput, res);
         resetStack(error);
         free(input);
         free(formattedInput);
@@ -38,12 +37,11 @@ int main(void){
 
     return 0;
 }
-#endif
 
 #ifdef RELEASE
 int main(void){
     calculatorErr* error = newError();
-    char* input = "(2+(5-4))*(3+(6+(8-(2*1))))";
+    char* input = "((37^2)+(5-(8%3)))*(3+(6+(8-(2*1))))";
     printf("%s\n", input);
     operationNode* treeRoot;
     buildBinTree(input, &treeRoot, error);

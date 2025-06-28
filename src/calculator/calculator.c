@@ -347,11 +347,13 @@ void buildBinTree(char* str, operationNode** nodeRoot, calculatorErr* error) {
 
             if(i-1 < 0){
                 setError(error, "buildBinTree: error, invalid expression: %s, started with operator", str);
+                free(nodeRoot);
                 return;
             }
 
             if(i+1 >= size){
                 setError(error, "buildBinTree: error, invalid expression: %s, ended in operator", str);
+                free(nodeRoot);
                 return;
             }
 
@@ -360,6 +362,11 @@ void buildBinTree(char* str, operationNode** nodeRoot, calculatorErr* error) {
 
             if (isAtomic(firstHalf)) {
                 (*nodeRoot)->atomicA = getFullNumber(firstHalf, 0, error);
+                if(error->raised){
+                    setError(error, "buildBinTree: error, could not determine atomicA: %s", firstHalf);
+                    free(nodeRoot);
+                    return;
+                }
             } else {
                 firstHalf = removeWrappingParennthesis(firstHalf);
                 printf("%s\n", firstHalf);
@@ -368,6 +375,11 @@ void buildBinTree(char* str, operationNode** nodeRoot, calculatorErr* error) {
 
             if (isAtomic(secondHalf)) {
                 (*nodeRoot)->atomicB = getFullNumber(secondHalf, 0, error);
+                if(error->raised){
+                    setError(error, "buildBinTree: error, could not determine atomicB: %s", secondHalf);
+                    free(nodeRoot);
+                    return;
+                }
             } else {
                 secondHalf = removeWrappingParennthesis(secondHalf);
                 printf("%s\n", secondHalf);
@@ -381,7 +393,6 @@ void buildBinTree(char* str, operationNode** nodeRoot, calculatorErr* error) {
     }
 }
 
-//Sustituir por cod limpio
 void printTree(operationNode* root, int level) {
     if (!root) {
         for (int i = 0; i < level; i++) printf("    ");
@@ -389,14 +400,14 @@ void printTree(operationNode* root, int level) {
         return;
     }
 
-    // Imprimir nodo con indentación
+    // Print node and atoms
     for (int i = 0; i < level; i++) printf("    ");
     printf("oper: %c, atmA: %.2f, atmB: %.2f\n", root->operatorChar, root->atomicA, root->atomicB);
 
-    // Imprimir rama izquierda (operandA)
+    // Print left (A) branch
     printTree(root->operandA, level + 1);
 
-    // Imprimir rama derecha (operandB)
+    // Print right (B) branch
     printTree(root->operandB, level + 1);
 }
 

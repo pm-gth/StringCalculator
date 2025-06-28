@@ -321,29 +321,39 @@ char* removeWrappingParennthesis(char* str) {
 void buildBinTree(char* str, operationNode** nodeRoot, calculatorErr* error) {
     int level = 0;
     int size = stringSize(str);
-
+   
     for (int i = 0; i < size; i++) {
         if (str[i] == '(') {
             level++;
         } else if (str[i] == ')') {
             level--;
             if (level < 0) {
-                setError(error, "infixCalc: error, found uncoupled parenthesis");
+                setError(error, "buildBinTree: error, found uncoupled parenthesis");
                 return;
             }
         } else if (isOperator(str[i]) && level == 0) {
-            // Aquí está el operador externo
+            // Found external operator
             *nodeRoot = malloc(sizeof(operationNode));
             if (!*nodeRoot) {
-                setError(error, "infixCalc: error, could not allocate memory");
+                setError(error, "buildBinTree: error, could not allocate memory for node");
                 return;
             }
             (*nodeRoot)->operation = parseOperator(str[i], error);
+            (*nodeRoot)->operatorChar = str[i];
             (*nodeRoot)->atomicA = 0;
             (*nodeRoot)->atomicB = 0;
             (*nodeRoot)->operandA = NULL;
             (*nodeRoot)->operandB = NULL;
-            (*nodeRoot)->operatorChar = str[i];
+
+            if(i-1 < 0){
+                setError(error, "buildBinTree: error, invalid expression: %s, started with operator", str);
+                return;
+            }
+
+            if(i+1 >= size){
+                setError(error, "buildBinTree: error, invalid expression: %s, ended in operator", str);
+                return;
+            }
 
             char* firstHalf = stringSplicer(str, 0, i-1);
             char* secondHalf = stringSplicer(str, i+1, size-1);

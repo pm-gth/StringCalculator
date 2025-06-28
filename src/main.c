@@ -43,11 +43,15 @@ int main(void){
 #ifdef RELEASE
 int main(void){
     calculatorErr* error = newError();
-    char* input = "(2+(5-4))*(3+4)";
+    char* input = "(2+(5-4))*(3+(6+(8-(2*1))))";
     printf("%s\n", input);
     operationNode* treeRoot;
     buildBinTree(input, &treeRoot, error);
     printTree(treeRoot, 0);
+
+    if(error->raised){
+        printf("%s\n", error->msg);
+    }
 
     return 0;
 }

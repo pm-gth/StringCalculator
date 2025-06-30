@@ -7,6 +7,15 @@
 #include"myNewStrings.h"
 
 const char OPERATORS[] = {'+', '-', '*', '/', '^', '%', '\0'};
+enum PRECEDENCE {
+    ADD = 0,
+    SUBTRACT = 0,
+    MULTIPLY = 1,
+    DIVIDE = 1,
+    MODULO = 1,
+    POWER = 2
+};
+
 float* stackPointer;
 int stackIndex = 0;
 int stackSize = 5;
@@ -374,8 +383,8 @@ void buildBinTree(char* str, operationNode** nodeRoot, calculatorErr* error) {
             (*nodeRoot)->operatorChar = str[i];
             (*nodeRoot)->atomicA = 0;
             (*nodeRoot)->atomicB = 0;
-            (*nodeRoot)->operandA = NULL;
-            (*nodeRoot)->operandB = NULL;
+            (*nodeRoot)->operandExpressionA = NULL;
+            (*nodeRoot)->operandExpressionB = NULL;
 
             // Split the string in two from the operator
             char* firstHalf = stringSplicer(str, 0, i-1);
@@ -394,7 +403,7 @@ void buildBinTree(char* str, operationNode** nodeRoot, calculatorErr* error) {
             } else {
                 char* unwrappedFirstHalf = removeWrappingParennthesis(firstHalf);
                 printf("%s\n", unwrappedFirstHalf);
-                buildBinTree(unwrappedFirstHalf, &((*nodeRoot)->operandA), error);
+                buildBinTree(unwrappedFirstHalf, &((*nodeRoot)->operandExpressionA), error);
                 free(unwrappedFirstHalf);
             }
 
@@ -411,7 +420,7 @@ void buildBinTree(char* str, operationNode** nodeRoot, calculatorErr* error) {
             } else {
                 char* unwrappedsecondHalf = removeWrappingParennthesis(secondHalf);
                 printf("%s\n", unwrappedsecondHalf);
-                buildBinTree(unwrappedsecondHalf, &((*nodeRoot)->operandB), error);
+                buildBinTree(unwrappedsecondHalf, &((*nodeRoot)->operandExpressionB), error);
                 free(unwrappedsecondHalf);
             }
 
@@ -446,10 +455,10 @@ void printTree(operationNode* root, int level) {
     printf("oper: %c, atmA: %.2f, atmB: %.2f\n", root->operatorChar, root->atomicA, root->atomicB);
 
     // Print left (A) branch
-    printTree(root->operandA, level + 1);
+    printTree(root->operandExpressionA, level + 1);
 
     // Print right (B) branch
-    printTree(root->operandB, level + 1);
+    printTree(root->operandExpressionB, level + 1);
 }
 
 // Frees the memory sapce to which the binary tree was allocated
@@ -457,9 +466,48 @@ void freeTree(operationNode* node) {
     if (!node) return;
 
     // Free children
-    freeTree(node->operandA);
-    freeTree(node->operandB);
+    freeTree(node->operandExpressionA);
+    freeTree(node->operandExpressionB);
 
     // Free parent
     free(node);
+}
+
+char* wrapInParenthesis(char* str, int start, int end, calculatorErr* error){
+    int size = stringSize(str);
+    
+    if(start < 0 || start > end || end > size){
+        setError(error, "wrapInParenthesis: error, invalid range for start:%d, end:%d in string of size:%d", start, end, size);
+        return NULL;
+    }
+
+    char* strFirstPar = insertCharInString(str, '(', start);
+    char* wrappedStr = insertCharInString(strFirstPar, ')', end);
+    free(strFirstPar);
+
+    return wrappedStr;
+}
+
+void formatInfixOperation(char* str, calculatorErr* error){
+    int nestingLevel = 0;
+    int maxNestingLevel = 0;
+    
+    char* unBlankedString = removeCharFromString(str, ' ');
+    int size = stringSize(unBlankedString);
+
+    // Check for nesting errors and get max nestingLevel
+    for (int i = 0; i < size; i++) {
+        if (unBlankedString[i] == '(') {
+            nestingLevel++;
+            if(nestingLevel > maxNestingLevel){
+                maxNestingLevel = nestingLevel;
+            }
+        } else if (unBlankedString[i] == ')') {
+            nestingLevel--;
+            if (nestingLevel < 0) {
+                setError(error, "buildBinTree: error, found uncoupled parenthesis");
+                return;
+            }
+        }
+    }
 }

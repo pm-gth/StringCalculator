@@ -13,5 +13,6 @@ float stof(char* str);
 char* stringSplicer(char* str, int lowerSplitPos, int upperSplitPos);
 char* removeCharFromString(char* str, char c);
 bool isNullTerminated(char* str);
+char* insertCharInString(char* str, char c, int pos);
 
 #endif

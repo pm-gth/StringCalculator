@@ -4,6 +4,7 @@
 #include<stdbool.h>
 
 #include"myNewStrings.h"
+#include "privateCalculator.h"
 
 //Creates String from stdin
 char* readString(){
@@ -194,6 +195,31 @@ char* removeCharFromString(char* str, char c){
         }
     }
 
+    newStr[newStrIndex] = '\0';
+
+    return newStr;
+}
+
+// Puts char c inside the string, the current char at position pos will be displaced to the right (pos+1)
+char* insertCharInString(char* str, char c, int pos){
+    if(pos < 0 || pos > stringSize(str)-1){
+        return NULL;
+    }
+    
+    int size = stringSize(str) + 2; // '\0' and char c
+    char* newStr = malloc(sizeof(char)*size);
+    if(!newStr) return NULL;
+    int newStrIndex = 0;
+
+    for(int i = 0; str[i] != '\0'; i++){
+        if(i != pos){
+            newStr[newStrIndex] = str[i];
+            newStrIndex++;
+        } else{
+            newStr[newStrIndex] = c;
+            newStrIndex++;
+        }
+    }
     newStr[newStrIndex] = '\0';
 
     return newStr;

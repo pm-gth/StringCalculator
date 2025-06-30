@@ -96,6 +96,12 @@ void removeCharFromString_works(void){
     TEST_ASSERT_EQUAL_STRING("helloworldhow'sitgoing?", removeCharFromString(str2, ' '));
 }
 
+void insertCharInString_works(void){
+    char str[] = "Hello World";
+
+    TEST_ASSERT_EQUAL_STRING("Hello0World", insertCharInString(str, '0', 5));
+}
+
 int main(void) {
     UNITY_BEGIN();
     RUN_TEST(string_size_gives_right_length);
@@ -111,5 +117,6 @@ int main(void) {
     RUN_TEST(stof_transforms_correctly);
     RUN_TEST(stringSplicer_splits_correctly);
     RUN_TEST(removeCharFromString_works);
+    RUN_TEST(insertCharInString_works);
     return UNITY_END();
 }

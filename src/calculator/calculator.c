@@ -490,10 +490,7 @@ char *wrapInParenthesis(char *str, int start, int end, calculatorErr *error) {
   int size = stringSize(str);
 
   if (start < 0 || start > end || end > size) {
-    setError(error,
-             "wrapInParenthesis: error, invalid range for start:%d, end:%d in "
-             "string of size:%d",
-             start, end, size);
+    setError(error, "wrapInParenthesis: error, invalid range for start:%d, end:%d in string of size:%d", start, end, size);
     return NULL;
   }
 
@@ -666,16 +663,10 @@ char *formatStringForInfix(char *str, int *operatorList, calculatorErr *error) {
         setError(error, "formatStringForInfix: error, one parenthesis for operator in pos %d was not recognised", operatorList[j]);
         return NULL;
       }
-      printf("Adding braces in (%d,%d)\n", lowerParenthesis, upperParenthesis);
-
-      printf("The old str: %s\n", str);
-      char *newStr =
-          wrapInParenthesis(str, lowerParenthesis, upperParenthesis, error);
-      printf("The new str: %s\n", newStr);
+      
+      char *newStr = wrapInParenthesis(str, lowerParenthesis, upperParenthesis, error);
       updatePrecedenceList(operatorList, lowerParenthesis, upperParenthesis);
-      for(int i = 0; operatorList[i] != -1; i++){
-        printf("Operator: %d\n", operatorList[i]);
-      }
+      
       free(str);
       str = newStr;
 

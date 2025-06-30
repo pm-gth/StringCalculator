@@ -89,13 +89,12 @@ int main(void) {
   }
 
   // Cleanup
-  free(deBlankedInput);
+ // free(deBlankedInput); -> ya se borra solo
   free(opList);
   free(formattedInput);
   freeTree(treeRoot);
   clearError(error);
   free(error);
-  free(formattedInput);
 
   return 0;
 }

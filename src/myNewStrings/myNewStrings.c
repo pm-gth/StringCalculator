@@ -207,20 +207,17 @@ char *insertCharInString(char *str, char c, int pos) {
     return NULL;
   }
 
-  // +1 para el nuevo char, +1 para '\0'
-  char *newStr = malloc(old_len + 2);
+  char *newStr = malloc(old_len + 2); // 1 for new char 1 for \0
   if (!newStr)
     return NULL;
 
   int newStrIndex = 0;
 
-  for (int i = 0; i < old_len + 1; i++) {  // incluimos el '\0'
+  for (int i = 0; i <= old_len; i++) {
     if (i == pos) {
-      newStr[newStrIndex++] = c;  // Insertamos el nuevo char en pos
+      newStr[newStrIndex++] = c;
     }
-    if (str[i] != '\0') {
-      newStr[newStrIndex++] = str[i];
-    }
+    newStr[newStrIndex++] = str[i];
   }
 
   return newStr;

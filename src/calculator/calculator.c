@@ -7,14 +7,6 @@
 #include "privateCalculator.h"
 
 const char OPERATORS[] = {'+', '-', '*', '/', '^', '%', '\0'};
-enum PRECEDENCE {
-  ADD = 0,
-  SUBTRACT = 0,
-  MULTIPLY = 1,
-  DIVIDE = 1,
-  MODULO = 1,
-  POWER = 2
-};
 
 float *stackPointer;
 int stackIndex = 0;
@@ -512,41 +504,60 @@ char *wrapInParenthesis(char *str, int start, int end, calculatorErr *error) {
   return wrappedStr;
 }
 
-void formatInfixOperation(char *str, calculatorErr *error) {
-  int nestingLevel = 0;
-  int maxNestingLevel = 0;
+// Returns operator's precedence
+int getOperatorPrecedence(char operator) {
+  int res = 0;
 
-  char *unBlankedString = removeCharFromString(str, ' ');
-  int size = stringSize(unBlankedString);
+  switch (operator) {
+  case '+':
+    res = 0;
+    break;
+  case '-':
+    res = 0;
+    break;
+  case '*':
+    res = 1;
+    break;
+  case '/':
+    res = 1;
+    break;
+  case '%':
+    res = 1;
+    break;
+  case '^':
+    res = 2;
+    break;
+  default:
+    res = -1;
+    break;
+  }
 
-  // Check for nesting errors and get max nestingLevel
-  for (int i = 0; i < size; i++) {
-    if (unBlankedString[i] == '(') {
-      nestingLevel++;
-      if (nestingLevel > maxNestingLevel) {
-        maxNestingLevel = nestingLevel;
-      }
-    } else if (unBlankedString[i] == ')') {
-      nestingLevel--;
-      if (nestingLevel < 0) {
-        setError(error, "buildBinTree: error, found uncoupled parenthesis");
-        return;
+  return res;
+}
+
+// List of operators, ordered by preference and indicated by their possition inside the string
+int *generateOperatorPrecedenceList(char *str) {
+  int numberOfOperators = 0;
+  for (int i = 0; str[i] != '\0'; i++) {
+    if (isOperator(str[i])) {
+      numberOfOperators++;
+    }
+  }
+
+  int *list = malloc(sizeof(int) * numberOfOperators);
+  if (!list) return NULL;
+  int listIndex = 0;
+
+  
+  // Get operators from all preference levels
+  for (int precedence = 2; precedence >= 0; precedence--) {
+    for (int i = 0; str[i] != '\0'; i++) {
+      if(isOperator(str[i]) && getOperatorPrecedence(str[i]) == precedence){
+        list[listIndex] = i;
+        listIndex++;
       }
     }
   }
 
-  for (int k = maxNestingLevel; k >= 0; k--) {
-    // Check for nesting errors and get max nestingLevel
-    for (int i = 0; i < size; i++) {
-      if (unBlankedString[i] == '(') {
-        nestingLevel++;
-      } else if (unBlankedString[i] == ')') {
-        nestingLevel--;
-      } else if(nestingLevel == k){
-        // Move in this nesting level
-        // Get highest operator precedence in this level
-        int maxPrecedence;
-      }
-    }
-  }
+  return list;
 }

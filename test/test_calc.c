@@ -1,6 +1,7 @@
 #include "fff.h"
 #include "privateCalculator.h"
 #include "unity.h"
+#include "unity_internals.h"
 
 #include <stdlib.h>
 
@@ -100,6 +101,16 @@ void stack_works_propperly(void) {
   TEST_ASSERT_FALSE(error->raised);
 }
 
+void generateOperatorPrecedenceList_works(void){
+  char* str = "(2+3)*89/78 + 9 ^ 2 + 7";
+  int solution[] = {16,5,8,2,12,20};
+  int* generated = generateOperatorPrecedenceList(str);
+
+  for(int i = 0; i < 6; i++){
+    TEST_ASSERT_EQUAL(solution[i], generated[i]);
+  }
+}
+
 int main(void) {
   UNITY_BEGIN();
   RUN_TEST(isOperator_detects_chars_correctly);
@@ -107,5 +118,7 @@ int main(void) {
   RUN_TEST(getFullNumber_expands_numbers_correctly);
   RUN_TEST(parseString_does_operation_correctly);
   RUN_TEST(stack_works_propperly);
+  RUN_TEST(generateOperatorPrecedenceList_works);
+
   return UNITY_END();
 }

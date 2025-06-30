@@ -38,6 +38,7 @@ int startRevPolishCalc(void) {
   return 0;
 }
 
+/*
 #ifdef RELEASE
 int main(void) {
   calculatorErr *error = newError();
@@ -53,6 +54,44 @@ int main(void) {
   }
 
   // Cleanup
+  freeTree(treeRoot);
+  clearError(error);
+  free(error);
+  free(formattedInput);
+
+  return 0;
+}
+#endif
+*/
+
+#ifdef RELEASE
+int main(void) {
+  calculatorErr *error = newError();
+  char *input = "5 + 6 + 9 / 2";
+  char *deBlankedInput = removeCharFromString(input, ' ');
+  int* opList = generateOperatorPrecedenceList(deBlankedInput);
+  
+  char *formattedInput = formatStringForInfix(deBlankedInput, opList, error);
+
+  if (error->raised) {
+    printf("%s\n", error->msg);
+    return -1;
+  }
+
+  printf("%s\n", formattedInput);
+
+  operationNode *treeRoot;
+  buildBinTree(formattedInput, &treeRoot, error);
+  printTree(treeRoot, 0);
+  if (error->raised) {
+    printf("%s\n", error->msg);
+    return -1;
+  }
+
+  // Cleanup
+  free(deBlankedInput);
+  free(opList);
+  free(formattedInput);
   freeTree(treeRoot);
   clearError(error);
   free(error);

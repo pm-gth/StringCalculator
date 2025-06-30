@@ -13,8 +13,8 @@ done
 
 INCLUDE_DIRS="-I include -I src/calculator"
 BUILD_TARGET="build/strCalc"
-ADITIONAL_FLAGS="-g -fsanitize=address"
-#
+ADITIONAL_FLAGS="-g "
+# -fsanitize=address
 
 mkdir -p build
 

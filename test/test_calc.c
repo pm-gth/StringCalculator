@@ -106,7 +106,7 @@ void generateOperatorPrecedenceList_works(void){
   int solution[] = {16,5,8,2,12,20};
   int* generated = generateOperatorPrecedenceList(str);
 
-  for(int i = 0; i < 6; i++){
+  for(int i = 0; generated[i] != -1; i++){
     TEST_ASSERT_EQUAL(solution[i], generated[i]);
   }
 }

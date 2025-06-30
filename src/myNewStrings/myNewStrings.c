@@ -202,26 +202,26 @@ char *removeCharFromString(char *str, char c) {
 // Puts char c inside the string, the current char at position pos will be
 // displaced to the right (pos+1)
 char *insertCharInString(char *str, char c, int pos) {
-  if (pos < 0 || pos > stringSize(str) - 1) {
+  int old_len = stringSize(str);
+  if (pos < 0 || pos > old_len) {
     return NULL;
   }
 
-  int size = stringSize(str) + 2; // '\0' and char c
-  char *newStr = malloc(sizeof(char) * size);
+  // +1 para el nuevo char, +1 para '\0'
+  char *newStr = malloc(old_len + 2);
   if (!newStr)
     return NULL;
+
   int newStrIndex = 0;
 
-  for (int i = 0; str[i] != '\0'; i++) {
-    if (i != pos) {
-      newStr[newStrIndex] = str[i];
-      newStrIndex++;
-    } else {
-      newStr[newStrIndex] = c;
-      newStrIndex++;
+  for (int i = 0; i < old_len + 1; i++) {  // incluimos el '\0'
+    if (i == pos) {
+      newStr[newStrIndex++] = c;  // Insertamos el nuevo char en pos
+    }
+    if (str[i] != '\0') {
+      newStr[newStrIndex++] = str[i];
     }
   }
-  newStr[newStrIndex] = '\0';
 
   return newStr;
 }

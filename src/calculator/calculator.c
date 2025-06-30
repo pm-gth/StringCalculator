@@ -498,7 +498,17 @@ char *wrapInParenthesis(char *str, int start, int end, calculatorErr *error) {
   }
 
   char *strFirstPar = insertCharInString(str, '(', start);
-  char *wrappedStr = insertCharInString(strFirstPar, ')', end);
+  if (!strFirstPar) {
+    setError(error, "wrapInParenthesis: error replacing left parenthesis");
+    return NULL;
+  }
+
+  char *wrappedStr = insertCharInString(strFirstPar, ')', end + 1); // End was displaced by (
+  if (!wrappedStr) {
+    setError(error, "wrapInParenthesis: error replacing right parenthesis");
+    return NULL;
+  }
+
   free(strFirstPar);
 
   return wrappedStr;
@@ -535,7 +545,9 @@ int getOperatorPrecedence(char operator) {
   return res;
 }
 
-// List of operators, ordered by preference and indicated by their possition inside the string
+// List of operators, ordered by preference and indicated by their possition
+// inside the string, delimited by -1
+// MUST receive a string with no blanks
 int *generateOperatorPrecedenceList(char *str) {
   int numberOfOperators = 0;
   for (int i = 0; str[i] != '\0'; i++) {
@@ -544,20 +556,133 @@ int *generateOperatorPrecedenceList(char *str) {
     }
   }
 
-  int *list = malloc(sizeof(int) * numberOfOperators);
-  if (!list) return NULL;
+  int *list = malloc(sizeof(int) * (numberOfOperators + 1)); // for delimiter
+  if (!list)
+    return NULL;
   int listIndex = 0;
 
-  
-  // Get operators from all preference levels
+  // Get operators from all preference levels, already sorted
   for (int precedence = 2; precedence >= 0; precedence--) {
     for (int i = 0; str[i] != '\0'; i++) {
-      if(isOperator(str[i]) && getOperatorPrecedence(str[i]) == precedence){
+      if (isOperator(str[i]) && getOperatorPrecedence(str[i]) == precedence) {
         list[listIndex] = i;
         listIndex++;
       }
     }
   }
 
+  list[listIndex] = -1;
+
   return list;
+}
+
+// Update operators positions in the string after wrapping with parenthesis
+void updatePrecedenceList(int *list, int lowerParenthesis, int upperParenthesis) {
+  for (int i = 0; list[i] != -1; i++) {
+    // operator after both parentheses
+    if (list[i] >= upperParenthesis) {
+      list[i] += 2;  
+    // operator between both parentheses   
+    } else if (list[i] >= lowerParenthesis) {
+      list[i] += 1;  
+    }
+    // does not change
+  }
+}
+
+
+// Adds necessary parenthesis and resolves operation precedence for the main
+// function MUST receive a string with no blanks
+char *formatStringForInfix(char *str, int *operatorList, calculatorErr *error) {
+  int lowerParenthesis;
+  int upperParenthesis;
+
+  for (int j = 0; operatorList[j] != -1; j++) {
+    int pos = operatorList[j];
+    // Check left operand
+    int i = pos - 1;
+    lowerParenthesis = -1;
+    // Left operand is atomic
+    if (isNumber(str[i])) {
+      while (i > 0 && isNumber(str[i - 1])) {
+        i--;
+      }
+      if (i > 0 && str[i - 1] == '(') {
+        // Already inside parenthesis
+      } else {
+        lowerParenthesis = i;
+      }
+    // Left operand is expression
+    } else if (str[i] == ')') {
+      int level = 1;
+      while (level != 0 && i >= 0) {
+        if (str[i] == ')')
+          level++;
+        else if (str[i] == '(')
+          level--;
+        i--;
+      }
+      if (i >= 0 && str[i] == '(') {
+        // Already inside parenthesis
+      } else {
+        lowerParenthesis = i + 1; // Move away from expression parenthesis
+      }
+    }
+
+    // Check right operand
+    i = pos + 1;
+    int size = stringSize(str);
+    upperParenthesis = -1;
+    // Right operand is atomic
+    if (isNumber(str[i])) {
+      while (i < size - 1 && isNumber(str[i + 1])) {
+        i++;
+      }
+      if (i < size - 1 && str[i + 1] == ')') {
+       // Already inside parenthesis
+      } else {
+        upperParenthesis = i + 1;
+      }
+    // Right operand is expression
+    } else if (str[i] == '(') {
+      int level = 1;
+      while (level != 0 && i < size) {
+        if (str[i] == '(')
+          level++;
+        else if (str[i] == ')')
+          level--;
+        i++;
+      }
+      if (i < size && str[i] == ')') {
+        // Already inside parenthesis
+      } else {
+        upperParenthesis = i;
+      }
+    }
+
+    // Wrap if necessary, then update operator positions
+    if (upperParenthesis != -1 || lowerParenthesis != -1) {
+      if (upperParenthesis == -1 || lowerParenthesis == -1) {
+        setError(error, "formatStringForInfix: error, one parenthesis for operator in pos %d was not recognised", operatorList[j]);
+        return NULL;
+      }
+      printf("Adding braces in (%d,%d)\n", lowerParenthesis, upperParenthesis);
+
+      printf("The old str: %s\n", str);
+      char *newStr =
+          wrapInParenthesis(str, lowerParenthesis, upperParenthesis, error);
+      printf("The new str: %s\n", newStr);
+      updatePrecedenceList(operatorList, lowerParenthesis, upperParenthesis);
+      for(int i = 0; operatorList[i] != -1; i++){
+        printf("Operator: %d\n", operatorList[i]);
+      }
+      free(str);
+      str = newStr;
+
+      if (error->raised) {
+        return NULL;
+      }
+    }
+  }
+  return str;
 }

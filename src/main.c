@@ -52,6 +52,12 @@ int main(void){
         printf("%s\n", error->msg);
     }
 
+    // Cleanup
+    freeTree(treeRoot);
+    clearError(error);
+    free(error);
+    free(formattedInput);
+
     return 0;
 }
 #endif

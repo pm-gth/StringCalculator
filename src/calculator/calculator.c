@@ -11,7 +11,7 @@ float* stackPointer;
 int stackIndex = 0;
 int stackSize = 5;
 
-// Struct used to set and caths errors
+// Struct used to set and catch errors
 calculatorErr* newError(){
     calculatorErr* error = malloc(sizeof(calculatorErr));
     error->raised = false;
@@ -386,13 +386,16 @@ void buildBinTree(char* str, operationNode** nodeRoot, calculatorErr* error) {
                 (*nodeRoot)->atomicA = getFullNumber(firstHalf, 0, error);
                 if(error->raised){
                     setError(error, "buildBinTree: error, could not determine atomicA: %s", firstHalf);
-                    free(nodeRoot);
+                    free(*nodeRoot);
+                    free(firstHalf);
+                    free(secondHalf);
                     return;
                 }
             } else {
-                firstHalf = removeWrappingParennthesis(firstHalf);
-                printf("%s\n", firstHalf);
-                buildBinTree(firstHalf, &((*nodeRoot)->operandA), error);
+                char* unwrappedFirstHalf = removeWrappingParennthesis(firstHalf);
+                printf("%s\n", unwrappedFirstHalf);
+                buildBinTree(unwrappedFirstHalf, &((*nodeRoot)->operandA), error);
+                free(unwrappedFirstHalf);
             }
 
             // Check if branch B is an atomic expression, else point it to another node
@@ -400,13 +403,16 @@ void buildBinTree(char* str, operationNode** nodeRoot, calculatorErr* error) {
                 (*nodeRoot)->atomicB = getFullNumber(secondHalf, 0, error);
                 if(error->raised){
                     setError(error, "buildBinTree: error, could not determine atomicB: %s", secondHalf);
-                    free(nodeRoot);
+                    free(*nodeRoot);
+                    free(firstHalf);
+                    free(secondHalf);
                     return;
                 }
             } else {
-                secondHalf = removeWrappingParennthesis(secondHalf);
-                printf("%s\n", secondHalf);
-                buildBinTree(secondHalf, &((*nodeRoot)->operandB), error);
+                char* unwrappedsecondHalf = removeWrappingParennthesis(secondHalf);
+                printf("%s\n", unwrappedsecondHalf);
+                buildBinTree(unwrappedsecondHalf, &((*nodeRoot)->operandB), error);
+                free(unwrappedsecondHalf);
             }
 
             free(firstHalf);
@@ -422,6 +428,7 @@ void buildBinTree(char* str, operationNode** nodeRoot, calculatorErr* error) {
         } else{
             // Try again
             buildBinTree(newUnwrapped, nodeRoot, error);
+            free(newUnwrapped);
         }
     }
 }
@@ -445,6 +452,14 @@ void printTree(operationNode* root, int level) {
     printTree(root->operandB, level + 1);
 }
 
+// Frees the memory sapce to which the binary tree was allocated
+void freeTree(operationNode* node) {
+    if (!node) return;
 
+    // Free children
+    freeTree(node->operandA);
+    freeTree(node->operandB);
 
-
+    // Free parent
+    free(node);
+}

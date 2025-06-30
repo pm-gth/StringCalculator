@@ -11,6 +11,7 @@ float* stackPointer;
 int stackIndex = 0;
 int stackSize = 5;
 
+// Struct used to set and caths errors
 calculatorErr* newError(){
     calculatorErr* error = malloc(sizeof(calculatorErr));
     error->raised = false;
@@ -61,6 +62,7 @@ void freeError(calculatorErr* error) {
     free(error);
 }
 
+// Checks if a char is an operator
 bool isOperator(char c){
     bool found = false;
     for(int i = 0; OPERATORS[i] != '\0' && !found; i++){
@@ -71,10 +73,12 @@ bool isOperator(char c){
     return found;
 }
 
+// Checks if a char is part of a number
 bool isNumber(char c){
     return ((c >= '0' && c <= '9') || c == '.');
 }
 
+// Gets the number inside a string
 float getFullNumber(char* str, int pos, calculatorErr* error){
     int initialBufferSize = 10;
     int bufferIndex = 0;
@@ -106,6 +110,7 @@ float getFullNumber(char* str, int pos, calculatorErr* error){
     return res;
 }
 
+// Calculator operations
 float add(float a, float b, calculatorErr* error){
     return a+b;
 }
@@ -154,6 +159,7 @@ float power(float base, float exponent, calculatorErr* error){
     return result;
 }
 
+// Returns a pointer to the respective operation
 operation_t parseOperator(char operator, calculatorErr* error){
     operation_t operation;
 
@@ -183,6 +189,7 @@ operation_t parseOperator(char operator, calculatorErr* error){
     return operation;
 }
 
+// Reverse polish calc, do not forget to call initStack before using it
 float revPolishCalc(char* str, calculatorErr* error){
     for(int i = 0; str[i] != '\0'; i++){
         if(isNumber(str[i])){
@@ -211,6 +218,7 @@ float revPolishCalc(char* str, calculatorErr* error){
     return popFromStack(error);
 }
 
+// Formats the operation given by the user for printing aesthetics
 char* formatOperation(char* str, calculatorErr* error){
     int bufferSize = 10;
     int bufferIndex = 0;
@@ -244,6 +252,7 @@ char* formatOperation(char* str, calculatorErr* error){
     return buffer;
 }
 
+// Starts the stack needed by the polish calculator
 void initStack(calculatorErr* error){
     stackPointer = malloc(sizeof(float)*stackSize);
 
@@ -288,11 +297,12 @@ void resetStack(calculatorErr* error){
     initStack(error);
 }
 
+// Checks if expression is an atomic value (aka a number) 
 bool isAtomic(char* str){
     bool isAtomic = true;
 
     for(int i = 0; str[i] != '\0'; i++){
-        if(str[i] != ' ' && !isNumber(str[i])){
+        if(!isNumber(str[i])){
             isAtomic = false;
         }
     }
@@ -318,10 +328,16 @@ char* removeWrappingParennthesis(char* str) {
     }
 }
 
+// Parses propperly formatted operation and generates binary tree
+// This function should NOT receive operations with blanks in between the chars (use removeCharFromString)
+// All operations shall have parenthesis (albeit sometimes redundant) so parse user's string through another
+// function that marks operator precedence with ()
 void buildBinTree(char* str, operationNode** nodeRoot, calculatorErr* error) {
     int level = 0;
     int size = stringSize(str);
+    bool foundOperator = false;
    
+    // Check parenthesis nesting
     for (int i = 0; i < size; i++) {
         if (str[i] == '(') {
             level++;
@@ -333,11 +349,27 @@ void buildBinTree(char* str, operationNode** nodeRoot, calculatorErr* error) {
             }
         } else if (isOperator(str[i]) && level == 0) {
             // Found external operator
+            foundOperator = true;
+
+            // Look for invalid operator scenarios and leave
+            if(i-1 < 0){
+                setError(error, "buildBinTree: error, invalid expression: %s, started with operator", str);
+                return;
+            }
+
+            if(i+1 >= size){
+                setError(error, "buildBinTree: error, invalid expression: %s, ended in operator", str);
+                return;
+            }
+
+            // Create the node
             *nodeRoot = malloc(sizeof(operationNode));
             if (!*nodeRoot) {
                 setError(error, "buildBinTree: error, could not allocate memory for node");
                 return;
             }
+
+             // Init node
             (*nodeRoot)->operation = parseOperator(str[i], error);
             (*nodeRoot)->operatorChar = str[i];
             (*nodeRoot)->atomicA = 0;
@@ -345,21 +377,11 @@ void buildBinTree(char* str, operationNode** nodeRoot, calculatorErr* error) {
             (*nodeRoot)->operandA = NULL;
             (*nodeRoot)->operandB = NULL;
 
-            if(i-1 < 0){
-                setError(error, "buildBinTree: error, invalid expression: %s, started with operator", str);
-                free(nodeRoot);
-                return;
-            }
-
-            if(i+1 >= size){
-                setError(error, "buildBinTree: error, invalid expression: %s, ended in operator", str);
-                free(nodeRoot);
-                return;
-            }
-
+            // Split the string in two from the operator
             char* firstHalf = stringSplicer(str, 0, i-1);
             char* secondHalf = stringSplicer(str, i+1, size-1);
 
+            // Check if branch A is an atomic expression, else point it to another node
             if (isAtomic(firstHalf)) {
                 (*nodeRoot)->atomicA = getFullNumber(firstHalf, 0, error);
                 if(error->raised){
@@ -373,6 +395,7 @@ void buildBinTree(char* str, operationNode** nodeRoot, calculatorErr* error) {
                 buildBinTree(firstHalf, &((*nodeRoot)->operandA), error);
             }
 
+            // Check if branch B is an atomic expression, else point it to another node
             if (isAtomic(secondHalf)) {
                 (*nodeRoot)->atomicB = getFullNumber(secondHalf, 0, error);
                 if(error->raised){
@@ -391,8 +414,19 @@ void buildBinTree(char* str, operationNode** nodeRoot, calculatorErr* error) {
             return;
         }
     }
+    // If couldn't find any operator, unwrap and try again
+    if(!foundOperator){
+        char* newUnwrapped = removeWrappingParennthesis(str);
+        if(sameString(str, newUnwrapped)){
+            // Do nothing, this is a non-valid string
+        } else{
+            // Try again
+            buildBinTree(newUnwrapped, nodeRoot, error);
+        }
+    }
 }
 
+// Prints the binary tree generated by buildBinTree for debugging purposes
 void printTree(operationNode* root, int level) {
     if (!root) {
         for (int i = 0; i < level; i++) printf("    ");

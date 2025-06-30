@@ -41,10 +41,11 @@ int startRevPolishCalc(void){
 #ifdef RELEASE
 int main(void){
     calculatorErr* error = newError();
-    char* input = "((37^2)+(5-(8%3)))*(3+(6+(8-(2*1))))";
-    printf("%s\n", input);
+    char* input = "( ( ( ( 37 ^ 2 ) + ( 5 - ( 8 % 3 ) ) ) * ( 3 + ( 6 + ( 8 - ( 2 * 1 ) ) ) ) ) )";
+    char* formattedInput = removeCharFromString(input, ' ');
+    printf("%s\n", formattedInput);
     operationNode* treeRoot;
-    buildBinTree(input, &treeRoot, error);
+    buildBinTree(formattedInput, &treeRoot, error);
     printTree(treeRoot, 0);
 
     if(error->raised){

@@ -1,3 +1,4 @@
+#include <locale.h>
 #include<stdlib.h>
 #include<stdio.h>
 #include<stdbool.h>
@@ -155,4 +156,45 @@ char* stringSplicer(char* str, int lowerSplitPos, int upperSplitPos){
     subString[subStringIndex] = '\0';
     
     return subString;
+}
+
+bool isNullTerminated(char* str) {
+    int threshold = 9999;
+
+    for (int i = 0; i < threshold; i++) {
+        if (str[i] == '\0') {
+            return true;
+        }
+    }
+    return false;
+}
+
+
+char* removeCharFromString(char* str, char c){
+    int deletions = 0;
+
+    for(int i = 0; str[i] != '\0'; i++){
+        if(str[i] == c){
+            deletions++;
+        }
+    }
+
+    int newSize = stringSize(str) - deletions + 1; // +1 for '\0'
+    char* newStr = malloc(sizeof(char)*newSize);
+
+    if(!newStr){
+        return NULL;
+    }
+
+    int newStrIndex = 0;
+    for(int i = 0; str[i] != '\0'; i++){
+        if(str[i] != c){
+            newStr[newStrIndex] = str[i];
+            newStrIndex++;
+        }
+    }
+
+    newStr[newStrIndex] = '\0';
+
+    return newStr;
 }

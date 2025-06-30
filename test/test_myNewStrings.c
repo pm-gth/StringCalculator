@@ -88,6 +88,14 @@ void stringSplicer_splits_correctly(void){
     TEST_ASSERT_EQUAL_STRING("H", stringSplicer(str, 0, 0));
 }
 
+void removeCharFromString_works(void){
+    char str1[] = "AcAcA";
+    char str2[] = "hello world how's it going?";
+
+    TEST_ASSERT_EQUAL_STRING("AAA", removeCharFromString(str1, 'c'));
+    TEST_ASSERT_EQUAL_STRING("helloworldhow'sitgoing?", removeCharFromString(str2, ' '));
+}
+
 int main(void) {
     UNITY_BEGIN();
     RUN_TEST(string_size_gives_right_length);
@@ -102,5 +110,6 @@ int main(void) {
     RUN_TEST(stringCopy_gives_same_strings);
     RUN_TEST(stof_transforms_correctly);
     RUN_TEST(stringSplicer_splits_correctly);
+    RUN_TEST(removeCharFromString_works);
     return UNITY_END();
 }

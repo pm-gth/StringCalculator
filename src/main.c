@@ -16,7 +16,8 @@ int main(void) {
   calculatorErr *error = newError();
   char *input = readString();
   
-  infixCalculator(input, error);
+  float res = infixCalculator(input, error);
+  printf("Sol: %f\n", res);
 
   if(error->raised){
     printf("%s\n", error->msg);

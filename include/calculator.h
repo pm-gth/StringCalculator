@@ -20,6 +20,6 @@ float reversePolishCalculator(char* str, calculatorErr* error);
 char *fancyRevPolOperation(char *str, calculatorErr *error);
 
 // Infix calculator
-void infixCalculator(char* str, calculatorErr* error);
+float infixCalculator(char* str, calculatorErr* error);
 
 #endif

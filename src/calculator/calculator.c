@@ -385,6 +385,7 @@ void buildBinTree(char *str, operationNode **nodeRoot, calculatorErr *error) {
             // Init node
             (*nodeRoot)->operation = parseOperator(str[i], error);
             (*nodeRoot)->operatorChar = str[i];
+            (*nodeRoot)->result = 0;
             (*nodeRoot)->atomicA = 0;
             (*nodeRoot)->atomicB = 0;
             (*nodeRoot)->operandExpressionA = NULL;
@@ -407,6 +408,10 @@ void buildBinTree(char *str, operationNode **nodeRoot, calculatorErr *error) {
                 char *unwrappedFirstHalf = removeWrappingParennthesis(firstHalf);
                 printf("%s\n", unwrappedFirstHalf);
                 buildBinTree(unwrappedFirstHalf, &((*nodeRoot)->operandExpressionA), error);
+ 
+                // Point the new node to its father
+                (*nodeRoot)->operandExpressionA->parentNode = *nodeRoot;
+
                 free(unwrappedFirstHalf);
             }
 
@@ -423,6 +428,10 @@ void buildBinTree(char *str, operationNode **nodeRoot, calculatorErr *error) {
                 char *unwrappedsecondHalf = removeWrappingParennthesis(secondHalf);
                 printf("%s\n", unwrappedsecondHalf);
                 buildBinTree(unwrappedsecondHalf, &((*nodeRoot)->operandExpressionB), error);
+
+                // Point the new node to its father
+                (*nodeRoot)->operandExpressionB->parentNode = *nodeRoot;
+
                 free(unwrappedsecondHalf);
             }
 
@@ -456,7 +465,7 @@ void printTree(operationNode *root, int level) {
     // Print node and atoms
     for (int i = 0; i < level; i++)
         printf("    ");
-    printf("oper: %c, atmA: %.2f, atmB: %.2f\n", root->operatorChar, root->atomicA, root->atomicB);
+    printf("oper: %c, atmA: %.2f, atmB: %.2f, res: %.2f\n", root->operatorChar, root->atomicA, root->atomicB, root->result);
 
     // Print left (A) branch
     printTree(root->operandExpressionA, level + 1);
@@ -718,24 +727,40 @@ char *evaluateOperatorPrecedence(char *input, int *operatorList, calculatorErr *
     return str;
 }
 
-void solveInfixBinTree(operationNode* node){
-    if (!node) {
-        // Reached a leave
+void solveInfixBinTree(operationNode* node, calculatorErr* error) {
+    if (!node || error->raised) return;
+
+    // Leaf node, return
+    if (!node->operandExpressionA && !node->operandExpressionB) {
+        node->result = node->operation(node->atomicA, node->atomicB, error);
         return;
     }
 
-    if(!node->operandExpressionA && !node->operandExpressionB){
-        // We are i
-        ;
+    // Solve left son
+    if (node->operandExpressionA) {
+        solveInfixBinTree(node->operandExpressionA, error);
+        if (error->raised) return;
+        node->atomicA = node->operandExpressionA->result;
     }
+
+    // Solve right son
+    if (node->operandExpressionB) {
+        solveInfixBinTree(node->operandExpressionB, error);
+        if (error->raised) return;
+        node->atomicB = node->operandExpressionB->result;
+    }
+
+    // Solve this node
+    node->result = node->operation(node->atomicA, node->atomicB, error);
 }
 
-void infixCalculator(char* str, calculatorErr* error){
+
+float infixCalculator(char* str, calculatorErr* error){
     // Remove blanks
     char* deBlanked = removeCharFromString(str, ' ');
     if(!deBlanked){
         setError(error, "infixCalculator: error, could not remove blanks from the string");
-        return;
+        return -1;
     }
 
     // Generate operator precedence list
@@ -743,7 +768,7 @@ void infixCalculator(char* str, calculatorErr* error){
     if(!opList){
         setError(error, "infixCalculator: error, could not generate operator precedence list");
         free(deBlanked);
-        return;
+        return -1;
     }
 
     // Resolve operator precedence by adding parenthesis
@@ -751,7 +776,7 @@ void infixCalculator(char* str, calculatorErr* error){
     if(error->raised){
         free(deBlanked);
         free(opList);
-        return;
+        return -1;
     }
 
     // Build binary tree of the operation
@@ -761,15 +786,35 @@ void infixCalculator(char* str, calculatorErr* error){
         free(deBlanked);
         free(opList);
         free(formatted);
-        return;
+        return -1;
     }
 
     // Debug
     printTree(treeRoot, 0);
+    
+    solveInfixBinTree(treeRoot, error);
+    
+    // Debug
+    printf("Solved:\n");
+    printTree(treeRoot, 0);
+    
+    float result = treeRoot->result;
+
+    if(error->raised){
+        freeTree(treeRoot);
+        free(deBlanked);
+        free(opList);
+        free(formatted);
+        return -1;
+    }
+
+    // Free
     freeTree(treeRoot);
     free(deBlanked);
     free(opList);
     free(formatted);
+
+    return result;
 }
 
 float reversePolishCalculator(char* str, calculatorErr* error){

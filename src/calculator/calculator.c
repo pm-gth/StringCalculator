@@ -674,3 +674,41 @@ char *formatStringForInfix(char *str, int *operatorList, calculatorErr *error) {
     }
     return str;
 }
+
+void infixCalculator(char* str, calculatorErr* error){
+    // Remove blanks
+    char* deBlanked = removeCharFromString(str, ' ');
+    if(!deBlanked){
+        setError(error, "infixCalculator: error, could not remove blanks from the string");
+        return;
+    }
+
+    // Generate operator precedence list
+    int* opList = generateOperatorPrecedenceList(deBlanked);
+    if(!opList){
+        setError(error, "infixCalculator: error, could not generate operator precedence list");
+        return;
+    }
+
+    // Resolve operator precedence by adding parenthesis
+    char* formatted = formatStringForInfix(deBlanked, opList, error);
+    if(error->raised){
+        free(opList);
+        return;
+    }
+
+    // Build binary tree of the operation
+    operationNode *treeRoot;
+    buildBinTree(formatted, &treeRoot, error);
+    if(error->raised){
+        free(opList);
+        free(formatted);
+        return;
+    }
+
+    // Debug
+    printTree(treeRoot, 0);
+    freeTree(treeRoot);
+    free(opList);
+    free(formatted);
+}

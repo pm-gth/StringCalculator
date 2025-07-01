@@ -68,34 +68,13 @@ int main(void) {
 int main(void) {
   calculatorErr *error = newError();
   char *input = "5 * (65+78)/2^4";
-  char *deBlankedInput = removeCharFromString(input, ' ');
-  int* opList = generateOperatorPrecedenceList(deBlankedInput);
+  infixCalculator(input, error);
+
+  if(error->raised){
+    printf("%s\n", error->msg);
+  }
   
-  char *formattedInput = formatStringForInfix(deBlankedInput, opList, error);
-
-  if (error->raised) {
-    printf("%s\n", error->msg);
-    return -1;
-  }
-
-  printf("Given: %s\n", input);
-  printf("Formatted: %s\n", formattedInput);
-
-  operationNode *treeRoot;
-  buildBinTree(formattedInput, &treeRoot, error);
-  printTree(treeRoot, 0);
-  if (error->raised) {
-    printf("%s\n", error->msg);
-  }
-
-  // Cleanup
- // free(deBlankedInput); -> ya se borra solo
-  free(opList);
-  free(formattedInput);
-  freeTree(treeRoot);
-  clearError(error);
   free(error);
-
   return 0;
 }
 #endif

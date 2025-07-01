@@ -14,7 +14,7 @@
 #ifdef RELEASE
 int main(void) {
   calculatorErr *error = newError();
-  char *input = "2^3 * 3 + 2.5 / 1";
+  char *input = readString();
   infixCalculator(input, error);
 
   if(error->raised){
@@ -22,6 +22,7 @@ int main(void) {
   }
 
   free(error);
+  free(input);
   return 0;
 }
 #endif

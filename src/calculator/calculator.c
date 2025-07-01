@@ -318,22 +318,21 @@ bool isAtomic(char *str) {
     return isAtomic;
 }
 
-#include <string.h>
-
-// Sustituir por cod limpio
+// Unwraps one level of parenthesis
 char *removeWrappingParennthesis(char *str) {
-    int size = strlen(str);
+    int size = stringSize(str);
     if (size >= 2 && str[0] == '(' && str[size - 1] == ')') {
-        // Crear un nuevo string sin los paréntesis envolventes
+        // New string without parenthesis
         char *newStr = malloc(size - 1);
-        if (!newStr)
-            return NULL; // manejar error
-        memcpy(newStr, str + 1, size - 2);
+        if (!newStr) return NULL;
+        
+        subStringCopy(str, newStr, 1, size-2);
+        
         newStr[size - 2] = '\0';
         return newStr;
     } else {
-        // No hay paréntesis envolventes, devolver copia directa
-        return strdup(str);
+        // No wrapping parenthesis dound, return a copy
+        return stringClone(str);
     }
 }
 

@@ -15,6 +15,8 @@
 int main(void) {
   calculatorErr *error = newError();
   char *input = readString();
+  
+  printf("Given: %s\n", input);
   infixCalculator(input, error);
 
   if(error->raised){

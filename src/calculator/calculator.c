@@ -1,9 +1,9 @@
-#include "calculator.h"
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 #include "myNewStrings.h"
+#include "calculator.h"
 #include "privateCalculator.h"
 
 const char OPERATORS[] = {'+', '-', '*', '/', '^', '%', '\0'};
@@ -438,7 +438,6 @@ void buildBinTree(char *str, operationNode **nodeRoot, calculatorErr *error) {
             // Do nothing, this is a non-valid string
         } else {
             // Try again
-            printf("Unwrapped: %s\n", newUnwrapped);
             buildBinTree(newUnwrapped, nodeRoot, error);
             free(newUnwrapped);
         }
@@ -686,8 +685,9 @@ char *evaluateOperatorPrecedence(char *input, int *operatorList, calculatorErr *
 
             char *newStr = wrapInParenthesis(str, lowerParenthesis, upperParenthesis, error);
             updatePrecedenceList(operatorList, lowerParenthesis, upperParenthesis);
-            printf("Added par at (%d,%d)\n", lowerParenthesis, upperParenthesis);
-            printf("Processed op %d, gives: %s\n", operatorList[j], newStr);
+            // Debug
+            // printf("Added par at (%d,%d)\n", lowerParenthesis, upperParenthesis);
+            // printf("Processed op %d, gives: %s\n", operatorList[j], newStr);
 
             free(str);
             str = newStr;
@@ -708,7 +708,6 @@ void infixCalculator(char* str, calculatorErr* error){
         return;
     }
 
-    printf("Given: %s\n", deBlanked);
     // Generate operator precedence list
     int* opList = generateOperatorPrecedenceList(deBlanked);
     if(!opList){

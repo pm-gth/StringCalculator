@@ -13,24 +13,23 @@
 
 #ifdef RELEASE
 int main(void) {
-  calculatorErr *error = newError();
-  char *input = readString();
+  while(true){
+    printf("Introduzca operacion: ");
+    calculatorErr *error = newError();
+    char *input = readString();
   
-  float res = infixCalculator(input, error);
-  printf("Sol: %f\n", res);
+    float res = infixCalculator(input, error);
+    printf("Sol: %f\n", res);
 
-  if(error->raised){
-    printf("%s\n", error->msg);
+    if(error->raised){
+      printf("%s\n", error->msg);
+      freeError(error);
+      free(input);
+      return -1;
+    }
+
+    freeError(error);
+    free(input);
   }
-
-  freeError(error);
-  free(input);
-  return 0;
 }
 #endif
-
-/*
-45 / (65*93 -5)
-Given: 45/(65*93-5)
-formatStringForInfix: error, one parenthesis for operator in pos 7 was not recognised
-*/

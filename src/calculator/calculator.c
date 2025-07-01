@@ -795,7 +795,7 @@ float infixCalculator(char* str, calculatorErr* error){
     solveInfixBinTree(treeRoot, error);
     
     // Debug
-    printf("Solved:\n");
+    printf("\nSolved Tree:\n");
     printTree(treeRoot, 0);
     
     float result = treeRoot->result;

@@ -3,6 +3,7 @@ set -e
 
 # Busca archivos fuente
 TARGET_FILES=$(find src -name '*.c')
+COMPILER="gcc"
 
 # Incluye los paquetes con headers privados
 PRIVATE_INCLUDE_DIRS=$(find src -name '*.h' -exec dirname {} \; | sort -u)
@@ -19,7 +20,7 @@ ADITIONAL_FLAGS="-g -fsanitize=address"
 mkdir -p build
 
 # Compila
-gcc -DRELEASE $TARGET_FILES $INCLUDE_DIRS $PRIVATE_HEADERS $ADITIONAL_FLAGS -o $BUILD_TARGET
+$COMPILER -DRELEASE $TARGET_FILES $INCLUDE_DIRS $PRIVATE_HEADERS $ADITIONAL_FLAGS -o $BUILD_TARGET
 
 # Ejecuta
 if [ "$1" == "-r" ] || [ "$1" == "--run" ]

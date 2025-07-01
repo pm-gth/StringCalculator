@@ -194,7 +194,7 @@ operation_t parseOperator(char operator, calculatorErr * error) {
 }
 
 // Reverse polish calc, do not forget to call initStack before using it
-float revPolishCalc(char *str, calculatorErr *error) {
+float solveRevPolString(char *str, calculatorErr *error) {
     for (int i = 0; str[i] != '\0'; i++) {
         if (isNumber(str[i])) {
             float number = getFullNumber(str, i, error);
@@ -227,7 +227,7 @@ float revPolishCalc(char *str, calculatorErr *error) {
 }
 
 // Formats the operation given by the user for printing aesthetics
-char *formatOperation(char *str, calculatorErr *error) {
+char *fancyRevPolOperation(char *str, calculatorErr *error) {
     int bufferSize = 10;
     int bufferIndex = 0;
     char *buffer = malloc(sizeof(char) * bufferSize);
@@ -711,4 +711,19 @@ void infixCalculator(char* str, calculatorErr* error){
     freeTree(treeRoot);
     free(opList);
     free(formatted);
+}
+
+float reversePolishCalculator(char* str, calculatorErr* error){
+    initStack(error);
+    if(error->raised){
+        return -1;
+    }
+
+    float res = solveRevPolString(str, error);
+    if(error->raised){
+        return -1;
+    }
+
+    resetStack(error);
+    return res;
 }

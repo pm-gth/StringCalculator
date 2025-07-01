@@ -3,6 +3,7 @@
 
 #include <stdbool.h>
 
+// Error handling
 typedef struct {
   bool raised;
   char *msg;
@@ -12,10 +13,11 @@ calculatorErr *newError();
 void clearError(calculatorErr *error);
 void setError(calculatorErr *error, const char *fmt, ...);
 
-float revPolishCalc(char *str, calculatorErr *error);
-char *formatOperation(char *str, calculatorErr *error);
-void initStack(calculatorErr *);
-void resetStack(calculatorErr *error);
+// Reverse-Polish calculator
+float reversePolishCalculator(char* str, calculatorErr* error);
+char *fancyRevPolOperation(char *str, calculatorErr *error);
+
+// Infix calculator
 void infixCalculator(char* str, calculatorErr* error);
 
 #endif

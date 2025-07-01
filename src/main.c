@@ -67,7 +67,7 @@ int main(void) {
 #ifdef RELEASE
 int main(void) {
   calculatorErr *error = newError();
-  char *input = "5 + 6 + 9 / 2";
+  char *input = "5 * (65+78)/2^4";
   char *deBlankedInput = removeCharFromString(input, ' ');
   int* opList = generateOperatorPrecedenceList(deBlankedInput);
   
@@ -78,14 +78,14 @@ int main(void) {
     return -1;
   }
 
-  printf("%s\n", formattedInput);
+  printf("Given: %s\n", input);
+  printf("Formatted: %s\n", formattedInput);
 
   operationNode *treeRoot;
   buildBinTree(formattedInput, &treeRoot, error);
   printTree(treeRoot, 0);
   if (error->raised) {
     printf("%s\n", error->msg);
-    return -1;
   }
 
   // Cleanup
@@ -99,3 +99,15 @@ int main(void) {
   return 0;
 }
 #endif
+
+
+/*
+Given: 5 * (65+78)/2^4
+MAL DEBERIA SER: ((5*(65+78))/(2^4)) -> ver causa
+Formatted: ((5*(65+78)/(2^4)))
+Unwrapped: (5*(65+78)/(2^4))
+Unwrapped: 5*(65+78)/(2^4)
+65+78)/(2^4
+78)/(2^4
+
+*/

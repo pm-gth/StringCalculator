@@ -694,7 +694,7 @@ char *evaluateOperatorPrecedence(char *input, int *operatorList, calculatorErr *
         // If at least one of the sides need wrapping, wrap
         if (needsUpper || needsLower) {
             if (upperParenthesis == -1 || lowerParenthesis == -1) {
-                setError(error, "formatStringForInfix: error, %s parenthesis for operator in pos %d was not recognised", ((upperParenthesis == -1)? "right" : "left"), operatorList[j]);
+                setError(error, "formatStringForInfix: error, %s parenthesis for operator in pos %d(%c) could not be placed", ((upperParenthesis == -1)? "right" : "left"), operatorList[j], str[operatorList[j]]);
                 free(str);
                 return NULL;
             }
@@ -716,6 +716,18 @@ char *evaluateOperatorPrecedence(char *input, int *operatorList, calculatorErr *
         }
     }
     return str;
+}
+
+void solveInfixBinTree(operationNode* node){
+    if (!node) {
+        // Reached a leave
+        return;
+    }
+
+    if(!node->operandExpressionA && !node->operandExpressionB){
+        // We are i
+        ;
+    }
 }
 
 void infixCalculator(char* str, calculatorErr* error){

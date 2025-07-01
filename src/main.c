@@ -14,7 +14,7 @@
 #ifdef RELEASE
 int main(void) {
   calculatorErr *error = newError();
-  char *input = "45 / (63*93 -5)";
+  char *input = readString();
   
   infixCalculator(input, error);
 
@@ -23,7 +23,7 @@ int main(void) {
   }
 
   freeError(error);
-  // free(input);
+  free(input);
   return 0;
 }
 #endif

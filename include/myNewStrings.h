@@ -8,7 +8,7 @@ int stringSize(char *str);
 bool sameString(char *str1, char *str2);
 int stoi(char *str);
 void toUpper(char *str);
-int stringCopy(char *str1, char *str2);
+void stringCopy(char *str1, char *str2);
 float stof(char *str);
 char *stringSplicer(char *str, int lowerSplitPos, int upperSplitPos);
 char *removeCharFromString(char *str, char c);

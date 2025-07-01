@@ -116,15 +116,12 @@ void toUpper(char *str) {
 }
 
 // Copies string
-int stringCopy(char *str1, char *str2) {
-  int j = 0;
-  for (int i = 0; str1[i] != '\0'; i++) {
-    str2[j] = str1[i];
-    j++;
+void stringCopy(char *str1, char *str2) {
+  int i;
+  for (i = 0; str1[i] != '\0'; i++) {
+    str2[i] = str1[i];
   }
-  str2[j] = '\0';
-
-  return 0;
+  str2[i] = '\0';
 }
 
 // Splits string (both upper and lower positions are included)

@@ -583,7 +583,33 @@ void updatePrecedenceList(int *list, int lowerParenthesis, int upperParenthesis)
 
 // Adds necessary parenthesis and resolves operation precedence for the main
 // function MUST receive a string with no blanks
-char *formatStringForInfix(char *str, int *operatorList, calculatorErr *error) {
+char *evaluateOperatorPrecedence(char *input, int *operatorList, calculatorErr *error) {
+    int level = 0; 
+    
+    // Check if all parenthesis are coupled
+    for (int i = 0; input[i] != '\0'; i++) {
+        if (input[i] == '(') {
+            level++;
+        } else if (input[i] == ')') {
+            level--;
+            if (level < 0) {
+                setError(error, "evaluateOperatorPrecedence: error, found uncoupled parenthesis");
+                return NULL;
+            }
+        }
+    }
+
+    // Make a copy of the original string to modify it
+    int size = stringSize(input);
+    char* str = malloc(sizeof(char)*(size+1));
+    stringCopy(input, str);
+
+    if(stringSize(str) != stringSize(input)){
+        setError(error, "evaluateOperatorPrecedence: error, duplicated string differs in size from the original one");
+        free(str);
+        return NULL;
+    }
+    
     int lowerParenthesis;
     int upperParenthesis;
 
@@ -604,8 +630,8 @@ char *formatStringForInfix(char *str, int *operatorList, calculatorErr *error) {
             }
             // Left operand is expression
         } else if (str[i] == ')') {
-            int level = 1;
-            i++;    // Advance to the next character
+            level = 1;
+            i--;    // Advance to the next character
             while (level != 0 && i >= 0) {
                 if (str[i] == ')')
                     level++;
@@ -636,8 +662,8 @@ char *formatStringForInfix(char *str, int *operatorList, calculatorErr *error) {
             }
             // Right operand is expression
         } else if (str[i] == '(') {
-            int level = 1;
-            i++;
+            level = 1;
+            i++;    // Advance to the next character
             while (level != 0 && i < size) {
                 if (str[i] == '(')
                     level++;
@@ -683,16 +709,19 @@ void infixCalculator(char* str, calculatorErr* error){
         return;
     }
 
+    printf("Given: %s\n", deBlanked);
     // Generate operator precedence list
     int* opList = generateOperatorPrecedenceList(deBlanked);
     if(!opList){
         setError(error, "infixCalculator: error, could not generate operator precedence list");
+        free(deBlanked);
         return;
     }
 
     // Resolve operator precedence by adding parenthesis
-    char* formatted = formatStringForInfix(deBlanked, opList, error);
+    char* formatted = evaluateOperatorPrecedence(deBlanked, opList, error);
     if(error->raised){
+        free(deBlanked);
         free(opList);
         return;
     }
@@ -701,6 +730,7 @@ void infixCalculator(char* str, calculatorErr* error){
     operationNode *treeRoot;
     buildBinTree(formatted, &treeRoot, error);
     if(error->raised){
+        free(deBlanked);
         free(opList);
         free(formatted);
         return;
@@ -709,6 +739,7 @@ void infixCalculator(char* str, calculatorErr* error){
     // Debug
     printTree(treeRoot, 0);
     freeTree(treeRoot);
+    free(deBlanked);
     free(opList);
     free(formatted);
 }

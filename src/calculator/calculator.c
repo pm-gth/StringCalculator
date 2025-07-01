@@ -608,14 +608,19 @@ char *evaluateOperatorPrecedence(char *input, int *operatorList, calculatorErr *
         return NULL;
     }
     
+    // Check both operators, two scenarios, they are atomic or they are expressions
+    // Needed or not we save the position the parentheses would occupy in case the other side needs them
     int lowerParenthesis;
     int upperParenthesis;
+    bool needsLower;
+    bool needsUpper;
 
     for (int j = 0; operatorList[j] != -1; j++) {
         int pos = operatorList[j];
         // Check left operand
         int i = pos - 1;
         lowerParenthesis = -1;
+        needsLower = false;
         // Left operand is atomic
         if (isNumber(str[i])) {
             while (i > 0 && isNumber(str[i - 1])) {
@@ -623,8 +628,10 @@ char *evaluateOperatorPrecedence(char *input, int *operatorList, calculatorErr *
             }
             if (i > 0 && str[i - 1] == '(') {
                 // Already inside parenthesis
+                lowerParenthesis = i;
             } else {
                 lowerParenthesis = i;
+                needsLower = true;
             }
             // Left operand is expression
         } else if (str[i] == ')') {
@@ -639,8 +646,10 @@ char *evaluateOperatorPrecedence(char *input, int *operatorList, calculatorErr *
             }
             if (i >= 0 && str[i] == '(') {
                 // Already inside parenthesis
+                lowerParenthesis = i + 1;
             } else {
                 lowerParenthesis = i + 1; // Move away from expression parenthesis
+                needsLower = true;
             }
         }
 
@@ -648,6 +657,7 @@ char *evaluateOperatorPrecedence(char *input, int *operatorList, calculatorErr *
         i = pos + 1;
         int size = stringSize(str);
         upperParenthesis = -1;
+        needsUpper = false;
         // Right operand is atomic
         if (isNumber(str[i])) {
             while (i < size - 1 && isNumber(str[i + 1])) {
@@ -655,8 +665,10 @@ char *evaluateOperatorPrecedence(char *input, int *operatorList, calculatorErr *
             }
             if (i < size - 1 && str[i + 1] == ')') {
                 // Already inside parenthesis
+                upperParenthesis = i + 1;
             } else {
                 upperParenthesis = i + 1;
+                needsUpper = true;
             }
             // Right operand is expression
         } else if (str[i] == '(') {
@@ -671,24 +683,30 @@ char *evaluateOperatorPrecedence(char *input, int *operatorList, calculatorErr *
             }
             if (i < size && str[i] == ')') {
                 // Already inside parenthesis
+                upperParenthesis = i;
             } else {
                 upperParenthesis = i;
+                needsUpper = true;
             }
         }
 
         // Wrap if necessary, then update operator positions
-        if (upperParenthesis != -1 || lowerParenthesis != -1) {
+        // If at least one of the sides need wrapping, wrap
+        if (needsUpper || needsLower) {
             if (upperParenthesis == -1 || lowerParenthesis == -1) {
-                setError(error, "formatStringForInfix: error, one parenthesis for operator in pos %d was not recognised", operatorList[j]);
+                setError(error, "formatStringForInfix: error, %s parenthesis for operator in pos %d was not recognised", ((upperParenthesis == -1)? "right" : "left"), operatorList[j]);
+                free(str);
                 return NULL;
             }
 
             char *newStr = wrapInParenthesis(str, lowerParenthesis, upperParenthesis, error);
-            updatePrecedenceList(operatorList, lowerParenthesis, upperParenthesis);
+            
             // Debug
-            // printf("Added par at (%d,%d)\n", lowerParenthesis, upperParenthesis);
-            // printf("Processed op %d, gives: %s\n", operatorList[j], newStr);
+            printf("Operator in %d to %s -> added par at (%d,%d) -> %s\n", operatorList[j], str, lowerParenthesis, upperParenthesis, newStr);
 
+            
+            updatePrecedenceList(operatorList, lowerParenthesis, upperParenthesis);
+            
             free(str);
             str = newStr;
 

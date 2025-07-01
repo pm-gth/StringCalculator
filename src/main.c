@@ -14,17 +14,22 @@
 #ifdef RELEASE
 int main(void) {
   calculatorErr *error = newError();
-  char *input = readString();
+  char *input = "45 / (63*93 -5)";
   
-  printf("Given: %s\n", input);
   infixCalculator(input, error);
 
   if(error->raised){
     printf("%s\n", error->msg);
   }
 
-  free(error);
-  free(input);
+  freeError(error);
+  // free(input);
   return 0;
 }
 #endif
+
+/*
+45 / (65*93 -5)
+Given: 45/(65*93-5)
+formatStringForInfix: error, one parenthesis for operator in pos 7 was not recognised
+*/

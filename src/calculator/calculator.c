@@ -200,7 +200,7 @@ float solveRevPolString(char *str, calculatorErr *error) {
             float number = getFullNumber(str, i, error);
             while (isNumber(str[i]) && str[i] != '\0')
                 i++;
-            i--; // TODO: Change this half-assed fix
+            i--;
             pushToStack(number);
         } else if (isOperator(str[i])) {
             if (stackIndex < 2) {
@@ -536,7 +536,7 @@ int getOperatorPrecedence(char operator) {
         res = 2;
         break;
     default:
-        res = -1;
+        res = -2;
         break;
     }
 
@@ -593,7 +593,7 @@ void updatePrecedenceList(int *list, int lowerParenthesis, int upperParenthesis)
 char *evaluateOperatorPrecedence(char *input, int *operatorList, calculatorErr *error) {
     int level = 0; 
     
-    // Check if all parenthesis are coupled
+    // Check if all parenthesis are coupled and no strange chars are found
     for (int i = 0; input[i] != '\0'; i++) {
         if (input[i] == '(') {
             level++;
@@ -603,6 +603,10 @@ char *evaluateOperatorPrecedence(char *input, int *operatorList, calculatorErr *
                 setError(error, "evaluateOperatorPrecedence: error, found uncoupled parenthesis");
                 return NULL;
             }
+        // Unknown char found, set error
+        } else if(!isNumber(input[i]) && !isOperator(input[i])){
+            setError(error, "evaluateOperatorPrecedence: error, strange char '%c' found in string", input[i]);
+            return NULL;
         }
     }
 

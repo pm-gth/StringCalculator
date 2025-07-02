@@ -38,23 +38,22 @@ void setError(calculatorErr *error, const char *message, ...) {
     va_list args;
     va_start(args, message);
 
-    // Calcular tamaño necesario
+    // Get message size
     int len = vsnprintf(NULL, 0, message, args);
     va_end(args);
 
     if (len < 0)
-        return; // Error al formatear
+        return;
 
-    // Reservar memoria
+    // Allocate message mem
     error->msg = malloc(len + 1);
     if (!error->msg)
-        return; // Fallo al reservar
+        return;
 
-    // Escribir mensaje formateado
-    // Crea de nuevo los args, ya los gastamos antes
+    // Create arguments again
     va_start(args, message);
-    // Cada vez que se lee el valor de args este cambia para apuntar al siguiente,
-    // así es como se leen todos los args de formato del string
+    
+    // Store message with args
     vsnprintf(error->msg, len + 1, message, args);
     va_end(args);
 

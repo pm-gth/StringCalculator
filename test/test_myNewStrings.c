@@ -5,11 +5,11 @@
 #include "unity_internals.h"
 
 void setUp(void) {
-    // Se ejecuta antes de cada test
+    ;
 }
 
 void tearDown(void) {
-    // Se ejecuta después de cada test
+    ;
 }
 
 void string_size_gives_right_length(void) {

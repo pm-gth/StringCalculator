@@ -227,10 +227,7 @@ float solveRevPolString(char *str, calculatorErr *error) {
             pushToStack(number);
         } else if (isOperator(str[i])) {
             if (stackIndex < 2) {
-                setError(error,
-                         "revPolishCalc: error, not enough operands in stack for %c "
-                         "operation",
-                         str[i]);
+                setError(error, "revPolishCalc: error, not enough operands in stack for %c operation", str[i]);
                 return -1;
             }
 
@@ -559,9 +556,6 @@ int getOperatorPrecedence(char operator) {
     case '^':
         res = 2;
         break;
-    default:
-        res = -2;
-        break;
     }
 
     return res;
@@ -628,7 +622,7 @@ bool isInputValidForInfix(char *input, calculatorErr *error) {
         if (input[i] != ' ') {
             if (input[i] == '(') {
                 // Check if parenthesis pair is empty
-                if(i <= size - 2 && input[i + 1] == ')'){
+                if (i <= size - 2 && input[i + 1] == ')') {
                     setError(error, "isInputValidForInfix: error, found empty parentheses pair");
                     return false;
                 }

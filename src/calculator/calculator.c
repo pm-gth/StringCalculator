@@ -405,7 +405,7 @@ void buildBinTree(char *str, operationNode **nodeRoot, calculatorErr *error) {
                 }
             } else {
                 char *unwrappedFirstHalf = removeWrappingParennthesis(firstHalf);
-                printf("%s\n", unwrappedFirstHalf);
+                //printf("%s\n", unwrappedFirstHalf);
                 buildBinTree(unwrappedFirstHalf, &((*nodeRoot)->operandExpressionA), error);
 
                 // Point the new node to its father
@@ -425,7 +425,7 @@ void buildBinTree(char *str, operationNode **nodeRoot, calculatorErr *error) {
                 }
             } else {
                 char *unwrappedsecondHalf = removeWrappingParennthesis(secondHalf);
-                printf("%s\n", unwrappedsecondHalf);
+                //printf("%s\n", unwrappedsecondHalf);
                 buildBinTree(unwrappedsecondHalf, &((*nodeRoot)->operandExpressionB), error);
 
                 // Point the new node to its father
@@ -446,7 +446,6 @@ void buildBinTree(char *str, operationNode **nodeRoot, calculatorErr *error) {
             // Do nothing, this is a non-valid string
         } else {
             // Try again
-            printf("DEBUG: %s", newUnwrapped);
             buildBinTree(newUnwrapped, nodeRoot, error);
             free(newUnwrapped);
         }
@@ -772,7 +771,7 @@ char *evaluateOperatorPrecedence(char *input, int *operatorList, calculatorErr *
             char *newStr = wrapInParenthesis(str, lowerParenthesis, upperParenthesis, error);
 
             // Debug
-            printf("Operator in %d to %s -> added par at (%d,%d) -> %s\n", operatorList[j], str, lowerParenthesis, upperParenthesis, newStr);
+            // printf("Operator in %d to %s -> added par at (%d,%d) -> %s\n", operatorList[j], str, lowerParenthesis, upperParenthesis, newStr);
 
             updatePrecedenceList(operatorList, lowerParenthesis, upperParenthesis);
 
@@ -857,13 +856,14 @@ float infixCalculator(char *str, calculatorErr *error) {
     }
 
     // Debug
-    printTree(treeRoot, 0);
+    // printf("\nGenerated Tree:\n");
+    // printTree(treeRoot, 0);
 
     solveInfixBinTree(treeRoot, error);
 
     // Debug
-    printf("\nSolved Tree:\n");
-    printTree(treeRoot, 0);
+    // printf("\nSolved Tree:\n");
+    // printTree(treeRoot, 0);
 
     float result = treeRoot->result;
 

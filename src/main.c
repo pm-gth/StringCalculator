@@ -7,12 +7,12 @@
 #ifdef RELEASE
 int main(void) {
   while(true){
-    printf("Introduzca operacion: ");
+    printf("Input Operation: ");
     calculatorErr *error = newError();
     char *input = readString();
   
     float res = infixCalculator(input, error);
-    printf("Sol: %f\n", res);
+    printf("Res: %f\n", res);
 
     if(error->raised){
       printf("%s\n", error->msg);

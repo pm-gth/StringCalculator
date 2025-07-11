@@ -52,6 +52,7 @@ void printStack(void);
 float solveRevPolString(char *str, calculatorErr *error); // Internal operation of RP-calc
 
 // Used in infix to resolve operator precedence
+bool isInputValidForInfix(char* input, calculatorErr *error);
 char *wrapInParenthesis(char *str, int start, int end, calculatorErr *error);
 int *generateOperatorPrecedenceList(char *str);
 void updatePrecedenceList(int *list, int lowerParenthesis, int upperParenthesis);

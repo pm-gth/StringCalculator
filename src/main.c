@@ -27,8 +27,6 @@ int main(void) {
 }
 #endif
 
-// Añadir func que detecte anidamiento incorrecto, si no hay operandos para todo operador, chars raros, etc
-
 /*
 CAUSA: los pars del 89 (cualquier atomico solo en unos ())
 TIPO: segfault

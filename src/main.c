@@ -25,22 +25,28 @@
 
 #ifdef RELEASE
 int main(void) {
+  calculatorErr *error = newError();
+  
   while(true){
-    printf("Input Operation: ");
-    calculatorErr *error = newError();
+    printf("Input Operation or 'q'\n");
     char *input = readString();
+    
+    if(sameString(input, "q")){
+      freeError(error);
+      free(input);
+      break;
+    }
   
     float res = infixCalculator(input, error);
-    printf("Res: %f\n", res);
 
     if(error->raised){
       printf("%s\n", error->msg);
       freeError(error);
       free(input);
       return -1;
+    } else{
+      printf("%f\n", res);
     }
-
-    freeError(error);
     free(input);
   }
 }

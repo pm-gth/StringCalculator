@@ -182,6 +182,7 @@ void infix_calc_works(void){
     char *str4 = "(1 + 2 * 8";
     char *str5 = "1+-";
     char *str6 = "(1+)2";
+    char *str7 = "2+3-()9";
 
     clearError(error);
     float res = infixCalculator(str, error);
@@ -212,6 +213,10 @@ void infix_calc_works(void){
 
     clearError(error);
     float res6 = infixCalculator(str6, error);
+    TEST_ASSERT_TRUE(error->raised);
+
+    clearError(error);
+    float res7 = infixCalculator(str7, error);
     TEST_ASSERT_TRUE(error->raised);
 }
 

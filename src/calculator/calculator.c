@@ -613,7 +613,9 @@ void updatePrecedenceList(int *list, int lowerParenthesis, int upperParenthesis)
 // Checks if a given string holds a valid infix operation
 bool isInputValidForInfix(char *input, calculatorErr *error) {
     // Check if input is empty or too short
-    if (stringSize(input) <= 2) {
+    int size = stringSize(input);
+
+    if (size <= 2) {
         setError(error, "isInputValidForInfix: error, string is too short or empty");
         return false;
     }
@@ -625,6 +627,12 @@ bool isInputValidForInfix(char *input, calculatorErr *error) {
     for (int i = 0; input[i] != '\0'; i++) {
         if (input[i] != ' ') {
             if (input[i] == '(') {
+                // Check if parenthesis pair is empty
+                if(i <= size - 2 && input[i + 1] == ')'){
+                    setError(error, "isInputValidForInfix: error, found empty parentheses pair");
+                    return false;
+                }
+
                 level++;
             } else if (input[i] == ')') {
                 level--;
@@ -673,7 +681,7 @@ bool isInputValidForInfix(char *input, calculatorErr *error) {
                 if (i >= 1 && input[i - 1] == '(') {
                     setError(error, "isInputValidForInfix: Error, found operator '%c' just after opening parenthesis", input[i]);
                     return false;
-                } else if (i <= stringSize(input) - 2 && input[i + 1] == ')') {
+                } else if (i <= size - 2 && input[i + 1] == ')') {
                     setError(error, "isInputValidForInfix: Error, found operator '%c' just before closing parenthesis", input[i]);
                     return false;
                 }

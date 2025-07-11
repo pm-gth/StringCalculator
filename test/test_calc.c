@@ -1,3 +1,22 @@
+/*
+ * Copyright (C) 2025 pablo.marq04
+ *
+ * This file is part of StringCalculator.
+ *
+ * StringCalculator is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * StringCalculator is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with StringCalculator. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include "calculator.h"
 #include "fff.h"
 #include "myNewStrings.h"
@@ -33,6 +52,8 @@ void getFullNumber_works(void) {
     calculatorErr *error = newError();
     char *str1 = "45600.77";
     char *str2 = "0";
+    char *str3 = "((78))";
+    char *str4 = "67 89";
 
     clearError(error);
     TEST_ASSERT_FLOAT_WITHIN(0.0001f, 45600.77, getFullNumber(str1, 0, error));
@@ -40,6 +61,14 @@ void getFullNumber_works(void) {
 
     clearError(error);
     TEST_ASSERT_FLOAT_WITHIN(0.0001f, 0, getFullNumber(str2, 0, error));
+    TEST_ASSERT_FALSE(error->raised);
+
+    clearError(error);
+    TEST_ASSERT_FLOAT_WITHIN(0.0001f, 78, getFullNumber(str3, 0, error));
+    TEST_ASSERT_FALSE(error->raised);
+
+    clearError(error);
+    TEST_ASSERT_FLOAT_WITHIN(0.0001f, 67, getFullNumber(str4, 0, error));
     TEST_ASSERT_FALSE(error->raised);
 
     clearError(error);
@@ -143,6 +172,39 @@ void operator_precedence_is_correctly_evaluated(void) {
     free(list1);
 }
 
+void infix_calc_works(void){
+    calculatorErr *error = newError();
+    
+    char *str = "(1)/((2-3)*2^2)";
+    char *str1 = "2";
+    char *str2 = "2 * 3 + 5^2";
+    char *str3 = "(365+27) % 365";
+    char *str4 = "(1 + 2 * 8";
+
+    clearError(error);
+    float res = infixCalculator(str, error);
+    TEST_ASSERT_FALSE(error->raised);
+    TEST_ASSERT_FLOAT_WITHIN(0.0001f, -0.25, res);
+
+    clearError(error);
+    float res1 = infixCalculator(str1, error);
+    TEST_ASSERT_TRUE(error->raised);
+
+    clearError(error);
+    float res2 = infixCalculator(str2, error);
+    TEST_ASSERT_FALSE(error->raised);
+    TEST_ASSERT_FLOAT_WITHIN(0.0001f, 31, res2);
+
+    clearError(error);
+    float res3 = infixCalculator(str3, error);
+    TEST_ASSERT_FALSE(error->raised);
+    TEST_ASSERT_FLOAT_WITHIN(0.0001f, 27, res3);
+
+    clearError(error);
+    float res4 = infixCalculator(str4, error);
+    TEST_ASSERT_TRUE(error->raised);
+}
+
 int main(void) {
     UNITY_BEGIN();
     RUN_TEST(isOperator_works);
@@ -152,6 +214,7 @@ int main(void) {
     RUN_TEST(reverse_polish_calc_works);
     RUN_TEST(generateOperatorPrecedenceList_works);
     RUN_TEST(operator_precedence_is_correctly_evaluated);
+    RUN_TEST(infix_calc_works);
 
     return UNITY_END();
 }

@@ -1,9 +1,30 @@
-#include <stdarg.h>
+/*
+ * Copyright (C) 2025 pablo.marq04
+ *
+ * This file is part of StringCalculator.
+ *
+ * StringCalculator is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * StringCalculator is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with StringCalculator. If not, see <https://www.gnu.org/licenses/>.
+ */
+ 
+ #include <stdarg.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 #include "myNewStrings.h"
 #include "calculator.h"
+#include "myNewStrings.h"
 #include "privateCalculator.h"
 
 const char OPERATORS[] = {'+', '-', '*', '/', '^', '%', '\0'};
@@ -38,23 +59,22 @@ void setError(calculatorErr *error, const char *message, ...) {
     va_list args;
     va_start(args, message);
 
-    // Calcular tamaño necesario
+    // Get message size
     int len = vsnprintf(NULL, 0, message, args);
     va_end(args);
 
     if (len < 0)
-        return; // Error al formatear
+        return;
 
-    // Reservar memoria
+    // Allocate message mem
     error->msg = malloc(len + 1);
     if (!error->msg)
-        return; // Fallo al reservar
+        return;
 
-    // Escribir mensaje formateado
-    // Crea de nuevo los args, ya los gastamos antes
+    // Create arguments again
     va_start(args, message);
-    // Cada vez que se lee el valor de args este cambia para apuntar al siguiente,
-    // así es como se leen todos los args de formato del string
+
+    // Store message with args
     vsnprintf(error->msg, len + 1, message, args);
     va_end(args);
 
@@ -82,7 +102,7 @@ bool isNumber(char c) {
     return ((c >= '0' && c <= '9') || c == '.');
 }
 
-// Gets the number inside a string
+// Gets the number inside a string, ignores parentheses
 float getFullNumber(char *str, int pos, calculatorErr *error) {
     int initialBufferSize = 10;
     int bufferIndex = 0;
@@ -94,19 +114,22 @@ float getFullNumber(char *str, int pos, calculatorErr *error) {
         return -1;
     }
 
-    while (isNumber(str[pos]) && str[pos] != '\0') {
-        buffer[bufferIndex++] = str[pos++];
+    while (str[pos] != '\0' && str[pos] != ' ') {
+        if (str[pos] != '(' && str[pos] != ')') {
+            buffer[bufferIndex++] = str[pos];
 
-        if (bufferIndex >= initialBufferSize) {
-            initialBufferSize *= 2;
-            buffer = realloc(buffer, sizeof(char) * initialBufferSize);
+            if (bufferIndex >= initialBufferSize) {
+                initialBufferSize *= 2;
+                buffer = realloc(buffer, sizeof(char) * initialBufferSize);
 
-            if (!buffer) {
-                setError(error, "getFullNumber: error, could not increase memory buffer");
-                free(buffer);
-                return -1;
+                if (!buffer) {
+                    setError(error, "getFullNumber: error, could not increase memory buffer");
+                    free(buffer);
+                    return -1;
+                }
             }
         }
+        pos++;
     }
     buffer[bufferIndex] = '\0';
     float res = stof(buffer);
@@ -310,7 +333,7 @@ bool isAtomic(char *str) {
     bool isAtomic = true;
 
     for (int i = 0; str[i] != '\0'; i++) {
-        if (!isNumber(str[i])) {
+        if (isOperator(str[i])) {
             isAtomic = false;
         }
     }
@@ -324,10 +347,11 @@ char *removeWrappingParennthesis(char *str) {
     if (size >= 2 && str[0] == '(' && str[size - 1] == ')') {
         // New string without parenthesis
         char *newStr = malloc(size - 1);
-        if (!newStr) return NULL;
-        
-        subStringCopy(str, newStr, 1, size-2);
-        
+        if (!newStr)
+            return NULL;
+
+        subStringCopy(str, newStr, 1, size - 2);
+
         newStr[size - 2] = '\0';
         return newStr;
     } else {
@@ -346,17 +370,12 @@ void buildBinTree(char *str, operationNode **nodeRoot, calculatorErr *error) {
     int size = stringSize(str);
     bool foundOperator = false;
 
-    // Check parenthesis nesting
+    // Check parenthesis nesting level
     for (int i = 0; i < size; i++) {
         if (str[i] == '(') {
             level++;
         } else if (str[i] == ')') {
             level--;
-            if (level < 0) {
-                setError(error, "buildBinTree: error, found uncoupled parenthesis");
-                freeTree(*nodeRoot);
-                return;
-            }
         } else if (isOperator(str[i]) && level == 0) {
             // Found external operator
             foundOperator = true;
@@ -406,9 +425,9 @@ void buildBinTree(char *str, operationNode **nodeRoot, calculatorErr *error) {
                 }
             } else {
                 char *unwrappedFirstHalf = removeWrappingParennthesis(firstHalf);
-                printf("%s\n", unwrappedFirstHalf);
+                //printf("%s\n", unwrappedFirstHalf);
                 buildBinTree(unwrappedFirstHalf, &((*nodeRoot)->operandExpressionA), error);
- 
+
                 // Point the new node to its father
                 (*nodeRoot)->operandExpressionA->parentNode = *nodeRoot;
 
@@ -426,7 +445,7 @@ void buildBinTree(char *str, operationNode **nodeRoot, calculatorErr *error) {
                 }
             } else {
                 char *unwrappedsecondHalf = removeWrappingParennthesis(secondHalf);
-                printf("%s\n", unwrappedsecondHalf);
+                //printf("%s\n", unwrappedsecondHalf);
                 buildBinTree(unwrappedsecondHalf, &((*nodeRoot)->operandExpressionB), error);
 
                 // Point the new node to its father
@@ -588,45 +607,101 @@ void updatePrecedenceList(int *list, int lowerParenthesis, int upperParenthesis)
     }
 }
 
-// Adds necessary parenthesis and resolves operation precedence for the main
-// function MUST receive a string with no blanks
-char *evaluateOperatorPrecedence(char *input, int *operatorList, calculatorErr *error) {
-    int level = 0; 
-    
-    // Check if all parenthesis are coupled and no strange chars are found
+// Checks if a given string holds a valid infix operation
+bool isInputValidForInfix(char *input, calculatorErr *error) {
+    // Check if input is empty
+    if (stringSize(input) == 0) {
+        setError(error, "isInputValidForInfix: error, empty string");
+        return false;
+    }
+
+    int level = 0;
+    bool foundOperator = false;
+
+    // Check if all parenthesis are coupled and no strange chars are found,also if there is any operator
     for (int i = 0; input[i] != '\0'; i++) {
-        if (input[i] == '(') {
-            level++;
-        } else if (input[i] == ')') {
-            level--;
-            if (level < 0) {
-                setError(error, "evaluateOperatorPrecedence: error, found uncoupled parenthesis");
-                return NULL;
+        if (input[i] != ' ') {
+            if (input[i] == '(') {
+                level++;
+            } else if (input[i] == ')') {
+                level--;
+
+            } else if (isOperator(input[i])) {
+                foundOperator = true;
+
+            } else if (!isNumber(input[i])) {
+                setError(error, "isInputValidForInfix: error, strange char '%c' found in string", input[i]);
+                return false;
             }
-        // Unknown char found, set error
-        } else if(!isNumber(input[i]) && !isOperator(input[i])){
-            setError(error, "evaluateOperatorPrecedence: error, strange char '%c' found in string", input[i]);
-            return NULL;
         }
     }
 
+    if (level != 0) {
+        setError(error, "isInputValidForInfix: error, found uncoupled parenthesis");
+        return false;
+    }
+
+    if (!foundOperator) {
+        setError(error, "isInputValidForInfix: error, could not find any operator");
+        return false;
+    }
+
+    // Check for badly placed operators
+    bool lastWasOp = false;
+    bool firstCharacter = true;
+    for (int i = 0; input[i] != '\0'; i++) {
+        if (input[i] != ' ' && input[i] != '(' && input[i] != ')') {
+            // Check if expression starts by operator
+            if (firstCharacter && isOperator(input[i])) {
+                setError(error, "isInputValidForInfix: Error, operation can not start with operator");
+                return false;
+            } else {
+                firstCharacter = false;
+            }
+
+            // Check for consecutive operators
+            if (isOperator(input[i])) {
+                if (lastWasOp) {
+                    setError(error, "isInputValidForInfix: Error, found two consecutive operators");
+                    return false;
+                }
+                lastWasOp = true;
+            } else {
+                lastWasOp = false;
+            }
+        }
+    }
+
+    // Check if expression ended in operator
+    if (lastWasOp) {
+        setError(error, "isInputValidForInfix: Error, operation can not end with operator");
+        return false;
+    }
+
+    return true;
+}
+
+// Adds necessary parenthesis and resolves operation precedence for the main
+// function MUST receive a string with no blanks
+char *evaluateOperatorPrecedence(char *input, int *operatorList, calculatorErr *error) {
     // Make a copy of the original string to modify it
     int size = stringSize(input);
-    char* str = malloc(sizeof(char)*(size+1));
+    char *str = malloc(sizeof(char) * (size + 1));
     stringCopy(input, str);
 
-    if(stringSize(str) != stringSize(input)){
+    if (stringSize(str) != stringSize(input)) {
         setError(error, "evaluateOperatorPrecedence: error, duplicated string differs in size from the original one");
         free(str);
         return NULL;
     }
-    
+
     // Check both operators, two scenarios, they are atomic or they are expressions
     // Needed or not we save the position the parentheses would occupy in case the other side needs them
     int lowerParenthesis;
     int upperParenthesis;
     bool needsLower;
     bool needsUpper;
+    int level = 0;
 
     for (int j = 0; operatorList[j] != -1; j++) {
         int pos = operatorList[j];
@@ -649,7 +724,7 @@ char *evaluateOperatorPrecedence(char *input, int *operatorList, calculatorErr *
             // Left operand is expression
         } else if (str[i] == ')') {
             level = 1;
-            i--;    // Advance to the next character
+            i--; // Advance to the next character
             while (level != 0 && i >= 0) {
                 if (str[i] == ')')
                     level++;
@@ -686,7 +761,7 @@ char *evaluateOperatorPrecedence(char *input, int *operatorList, calculatorErr *
             // Right operand is expression
         } else if (str[i] == '(') {
             level = 1;
-            i++;    // Advance to the next character
+            i++; // Advance to the next character
             while (level != 0 && i < size) {
                 if (str[i] == '(')
                     level++;
@@ -707,19 +782,19 @@ char *evaluateOperatorPrecedence(char *input, int *operatorList, calculatorErr *
         // If at least one of the sides need wrapping, wrap
         if (needsUpper || needsLower) {
             if (upperParenthesis == -1 || lowerParenthesis == -1) {
-                setError(error, "formatStringForInfix: error, %s parenthesis for operator in pos %d(%c) could not be placed", ((upperParenthesis == -1)? "right" : "left"), operatorList[j], str[operatorList[j]]);
+                setError(error, "formatStringForInfix: error, %s parenthesis for operator in pos %d(%c) could not be placed", ((upperParenthesis == -1) ? "right" : "left"), operatorList[j],
+                         str[operatorList[j]]);
                 free(str);
                 return NULL;
             }
 
             char *newStr = wrapInParenthesis(str, lowerParenthesis, upperParenthesis, error);
-            
-            // Debug
-            printf("Operator in %d to %s -> added par at (%d,%d) -> %s\n", operatorList[j], str, lowerParenthesis, upperParenthesis, newStr);
 
-            
+            // Debug
+            // printf("Operator in %d to %s -> added par at (%d,%d) -> %s\n", operatorList[j], str, lowerParenthesis, upperParenthesis, newStr);
+
             updatePrecedenceList(operatorList, lowerParenthesis, upperParenthesis);
-            
+
             free(str);
             str = newStr;
 
@@ -731,8 +806,9 @@ char *evaluateOperatorPrecedence(char *input, int *operatorList, calculatorErr *
     return str;
 }
 
-void solveInfixBinTree(operationNode* node, calculatorErr* error) {
-    if (!node || error->raised) return;
+void solveInfixBinTree(operationNode *node, calculatorErr *error) {
+    if (!node || error->raised)
+        return;
 
     // Leaf node, return
     if (!node->operandExpressionA && !node->operandExpressionB) {
@@ -743,14 +819,16 @@ void solveInfixBinTree(operationNode* node, calculatorErr* error) {
     // Solve left son
     if (node->operandExpressionA) {
         solveInfixBinTree(node->operandExpressionA, error);
-        if (error->raised) return;
+        if (error->raised)
+            return;
         node->atomicA = node->operandExpressionA->result;
     }
 
     // Solve right son
     if (node->operandExpressionB) {
         solveInfixBinTree(node->operandExpressionB, error);
-        if (error->raised) return;
+        if (error->raised)
+            return;
         node->atomicB = node->operandExpressionB->result;
     }
 
@@ -758,26 +836,30 @@ void solveInfixBinTree(operationNode* node, calculatorErr* error) {
     node->result = node->operation(node->atomicA, node->atomicB, error);
 }
 
+float infixCalculator(char *str, calculatorErr *error) {
+    // Check if input string is valid
+    if (!isInputValidForInfix(str, error)) {
+        return -1;
+    }
 
-float infixCalculator(char* str, calculatorErr* error){
     // Remove blanks
-    char* deBlanked = removeCharFromString(str, ' ');
-    if(!deBlanked){
+    char *deBlanked = removeCharFromString(str, ' ');
+    if (!deBlanked) {
         setError(error, "infixCalculator: error, could not remove blanks from the string");
         return -1;
     }
 
     // Generate operator precedence list
-    int* opList = generateOperatorPrecedenceList(deBlanked);
-    if(!opList){
+    int *opList = generateOperatorPrecedenceList(deBlanked);
+    if (!opList) {
         setError(error, "infixCalculator: error, could not generate operator precedence list");
         free(deBlanked);
         return -1;
     }
 
     // Resolve operator precedence by adding parenthesis
-    char* formatted = evaluateOperatorPrecedence(deBlanked, opList, error);
-    if(error->raised){
+    char *formatted = evaluateOperatorPrecedence(deBlanked, opList, error);
+    if (error->raised) {
         free(deBlanked);
         free(opList);
         return -1;
@@ -786,7 +868,7 @@ float infixCalculator(char* str, calculatorErr* error){
     // Build binary tree of the operation
     operationNode *treeRoot;
     buildBinTree(formatted, &treeRoot, error);
-    if(error->raised){
+    if (error->raised) {
         free(deBlanked);
         free(opList);
         free(formatted);
@@ -794,17 +876,18 @@ float infixCalculator(char* str, calculatorErr* error){
     }
 
     // Debug
-    printTree(treeRoot, 0);
-    
+    // printf("\nGenerated Tree:\n");
+    // printTree(treeRoot, 0);
+
     solveInfixBinTree(treeRoot, error);
-    
+
     // Debug
-    printf("\nSolved Tree:\n");
-    printTree(treeRoot, 0);
-    
+    // printf("\nSolved Tree:\n");
+    // printTree(treeRoot, 0);
+
     float result = treeRoot->result;
 
-    if(error->raised){
+    if (error->raised) {
         freeTree(treeRoot);
         free(deBlanked);
         free(opList);
@@ -821,14 +904,14 @@ float infixCalculator(char* str, calculatorErr* error){
     return result;
 }
 
-float reversePolishCalculator(char* str, calculatorErr* error){
+float reversePolishCalculator(char *str, calculatorErr *error) {
     initStack(error);
-    if(error->raised){
+    if (error->raised) {
         return -1;
     }
 
     float res = solveRevPolString(str, error);
-    if(error->raised){
+    if (error->raised) {
         return -1;
     }
 

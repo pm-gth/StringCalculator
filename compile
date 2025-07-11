@@ -1,11 +1,16 @@
 #!/bin/bash
+
+# 
+# Script used to build and run the program
+#
+
 set -e
 
-# Busca archivos fuente
+# Search for source files
 TARGET_FILES=$(find src -name '*.c')
 COMPILER="gcc"
 
-# Incluye los paquetes con headers privados
+# Add directories with private headers
 PRIVATE_INCLUDE_DIRS=$(find src -name '*.h' -exec dirname {} \; | sort -u)
 PRIVATE_HEADERS=""
 for dir in $PRIVATE_INCLUDE_DIRS; do
@@ -15,14 +20,13 @@ done
 INCLUDE_DIRS="-I include -I src/calculator"
 BUILD_TARGET="build/strCalc"
 ADITIONAL_FLAGS="-g -fsanitize=address"
-# 
 
 mkdir -p build
 
-# Compila
+# Build
 $COMPILER -DRELEASE $TARGET_FILES $INCLUDE_DIRS $PRIVATE_HEADERS $ADITIONAL_FLAGS -o $BUILD_TARGET
 
-# Ejecuta
+# Run
 if [ "$1" == "-r" ] || [ "$1" == "--run" ]
 then
     ./$BUILD_TARGET

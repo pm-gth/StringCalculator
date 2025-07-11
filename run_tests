@@ -1,15 +1,18 @@
 #!/bin/bash
 
+# 
+# Script used to build and run the test files
+#
+
 TEST_DIR="./test"
 INCLUDE_DIRS="-I include/ -I third_party/ -I src/calculator"
 BUILD_TEST_DIR="./build/test"
 THIRD_PARTY_DIR="./third_party"
 
-# Valores por defecto
+# Default values
 VERBOSE=false
 RUN_ALL=false
 
-# Argumentos
 while [[ $# -gt 0 ]]; do
   case "$1" in
     -v|--verbose)
@@ -27,10 +30,10 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-# Busca archivos fuente
+# Search for source files
 TARGET_FILES=$(find src -name '*.c')
 
-# Incluye paquetes con headers privados
+# Add directories with private headers
 PRIVATE_INCLUDE_DIRS=$(find src -name '*.h' -exec dirname {} \; | sort -u)
 PRIVATE_HEADERS=""
 for dir in $PRIVATE_INCLUDE_DIRS; do
@@ -39,7 +42,7 @@ done
 
 mkdir -p "$BUILD_TEST_DIR"
 
-# Muestra los archivos de test
+# Show all test files, if there is no "all" argument, ask the user which test to run
 tests=($(ls "$TEST_DIR"/test_*.c 2>/dev/null | xargs -n 1 basename))
 
 if [ ${#tests[@]} -eq 0 ]; then
@@ -85,8 +88,7 @@ compile_test() {
 run_test() {
   local exec_file="$1"
   echo -e "\n🟢 Running: \033[1;36m$test_file\033[0m"
-  ./scripts/allTestsAreCalled $TEST_DIR/$test_file # Comprueba si se ha llamado a todos los tests
-
+  ./scripts/allTestsAreCalled $TEST_DIR/$test_file # Check if all defined tests are being ran
   "$exec_file"
   local status=$?
 

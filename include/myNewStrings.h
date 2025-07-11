@@ -17,7 +17,7 @@
  * along with StringCalculator. If not, see <https://www.gnu.org/licenses/>.
  */
 
- #ifndef MYNEWSTRINGS
+#ifndef MYNEWSTRINGS
 #define MYNEWSTRINGS
 
 #include <stdbool.h>

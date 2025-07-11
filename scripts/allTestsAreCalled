@@ -1,26 +1,30 @@
 #!/bin/bash
 
-# Verifica que se pasó un archivo
+# 
+# Script used to check if all of the defined tests are being ran
+#
+
+# Check a file has been passed
 if [ $# -lt 1 ]; then
-    echo "Use: $0 archivo.c [--verbose|-v]"
+    echo "Use: $0 file.c [--verbose|-v]"
     exit 1
 fi
 
-archivo="$1"
+file="$1"
 verbose=0
 
 if [ "$2" == "--verbose" ] || [ "$2" == "-v" ]; then
     verbose=1
 fi
 
-# Funciones definidas (líneas no comentadas que definen funciones test)
-all_tests=$(grep -E '^\s*void\s+[a-zA-Z0-9_]+\s*\(\s*void\s*\)\s*{' "$archivo" | grep -v '//' \
+# Defined tests
+all_tests=$(grep -E '^\s*void\s+[a-zA-Z0-9_]+\s*\(\s*void\s*\)\s*{' "$file" | grep -v '//' \
     | sed -E 's/^\s*void\s+([a-zA-Z0-9_]+)\s*\(.*\).*/\1/' \
     | grep -vE '^(setUp|tearDown|main)$' \
     | sort)
 
-# RUN_TESTs en main que NO están comentados (ignora líneas que tengan // antes)
-called_tests=$(grep -E '^[^/]*RUN_TEST\s*\(\s*[a-zA-Z0-9_]+\s*\)' "$archivo" \
+# Non-commented tests in main
+called_tests=$(grep -E '^[^/]*RUN_TEST\s*\(\s*[a-zA-Z0-9_]+\s*\)' "$file" \
     | sed -E 's/.*RUN_TEST\s*\(\s*([a-zA-Z0-9_]+)\s*\).*/\1/' \
     | sort)
 
@@ -31,7 +35,7 @@ if [ $verbose -eq 1 ]; then
     echo "$called_tests"
 fi
 
-# Detectar tests definidos pero no llamados
+# Get tests that are defined but not called in main, then print a warning
 missing=$(comm -23 <(echo "$all_tests") <(echo "$called_tests"))
 
 if [ -n "$missing" ]; then

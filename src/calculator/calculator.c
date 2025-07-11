@@ -16,8 +16,8 @@
  * You should have received a copy of the GNU General Public License
  * along with StringCalculator. If not, see <https://www.gnu.org/licenses/>.
  */
- 
- #include <stdarg.h>
+
+#include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -172,6 +172,7 @@ float power(float base, float exponent, calculatorErr *error) {
         exponent = -exponent;
     }
 
+    // Does not work propperly with float exponents
     for (int i = 0; i < exponent; i++) {
         result *= base;
     }
@@ -227,10 +228,7 @@ float solveRevPolString(char *str, calculatorErr *error) {
             pushToStack(number);
         } else if (isOperator(str[i])) {
             if (stackIndex < 2) {
-                setError(error,
-                         "revPolishCalc: error, not enough operands in stack for %c "
-                         "operation",
-                         str[i]);
+                setError(error, "revPolishCalc: error, not enough operands in stack for %c operation", str[i]);
                 return -1;
             }
 
@@ -285,6 +283,8 @@ char *fancyRevPolOperation(char *str, calculatorErr *error) {
 
 // Starts the stack needed by the polish calculator
 void initStack(calculatorErr *error) {
+    stackIndex = 0;
+    stackSize = 5;
     stackPointer = malloc(sizeof(float) * stackSize);
 
     if (!stackPointer) {
@@ -320,11 +320,14 @@ void printStack(void) {
     }
 }
 
-void resetStack(calculatorErr *error) {
-    free(stackPointer);
-    stackIndex = 0;
-    stackSize = 5;
+void destroyStack() {
+    if (stackPointer) {
+        free(stackPointer);
+    }
+}
 
+void resetStack(calculatorErr *error) {
+    destroyStack();
     initStack(error);
 }
 
@@ -425,7 +428,7 @@ void buildBinTree(char *str, operationNode **nodeRoot, calculatorErr *error) {
                 }
             } else {
                 char *unwrappedFirstHalf = removeWrappingParennthesis(firstHalf);
-                //printf("%s\n", unwrappedFirstHalf);
+                // printf("%s\n", unwrappedFirstHalf);
                 buildBinTree(unwrappedFirstHalf, &((*nodeRoot)->operandExpressionA), error);
 
                 // Point the new node to its father
@@ -445,7 +448,7 @@ void buildBinTree(char *str, operationNode **nodeRoot, calculatorErr *error) {
                 }
             } else {
                 char *unwrappedsecondHalf = removeWrappingParennthesis(secondHalf);
-                //printf("%s\n", unwrappedsecondHalf);
+                // printf("%s\n", unwrappedsecondHalf);
                 buildBinTree(unwrappedsecondHalf, &((*nodeRoot)->operandExpressionB), error);
 
                 // Point the new node to its father
@@ -554,17 +557,12 @@ int getOperatorPrecedence(char operator) {
     case '^':
         res = 2;
         break;
-    default:
-        res = -2;
-        break;
     }
 
     return res;
 }
 
-// List of operators, ordered by preference and indicated by their possition
-// inside the string, delimited by -1
-// MUST receive a string with no blanks
+// List of operators, ordered by preference and indicated by their possitions, delimited by -1, input can not have blanks
 int *generateOperatorPrecedenceList(char *str) {
     int numberOfOperators = 0;
     for (int i = 0; str[i] != '\0'; i++) {
@@ -609,9 +607,11 @@ void updatePrecedenceList(int *list, int lowerParenthesis, int upperParenthesis)
 
 // Checks if a given string holds a valid infix operation
 bool isInputValidForInfix(char *input, calculatorErr *error) {
-    // Check if input is empty
-    if (stringSize(input) == 0) {
-        setError(error, "isInputValidForInfix: error, empty string");
+    // Check if input is empty or too short
+    int size = stringSize(input);
+
+    if (size <= 2) {
+        setError(error, "isInputValidForInfix: error, string is too short or empty");
         return false;
     }
 
@@ -622,6 +622,12 @@ bool isInputValidForInfix(char *input, calculatorErr *error) {
     for (int i = 0; input[i] != '\0'; i++) {
         if (input[i] != ' ') {
             if (input[i] == '(') {
+                // Check if parenthesis pair is empty
+                if (i <= size - 2 && input[i + 1] == ')') {
+                    setError(error, "isInputValidForInfix: error, found empty parentheses pair");
+                    return false;
+                }
+
                 level++;
             } else if (input[i] == ')') {
                 level--;
@@ -659,13 +665,21 @@ bool isInputValidForInfix(char *input, calculatorErr *error) {
                 firstCharacter = false;
             }
 
-            // Check for consecutive operators
+            // Check for consecutive operators and operators just after '(' or just before ')'
             if (isOperator(input[i])) {
                 if (lastWasOp) {
                     setError(error, "isInputValidForInfix: Error, found two consecutive operators");
                     return false;
                 }
                 lastWasOp = true;
+
+                if (i >= 1 && input[i - 1] == '(') {
+                    setError(error, "isInputValidForInfix: Error, found operator '%c' just after opening parenthesis", input[i]);
+                    return false;
+                } else if (i <= size - 2 && input[i + 1] == ')') {
+                    setError(error, "isInputValidForInfix: Error, found operator '%c' just before closing parenthesis", input[i]);
+                    return false;
+                }
             } else {
                 lastWasOp = false;
             }
@@ -681,8 +695,7 @@ bool isInputValidForInfix(char *input, calculatorErr *error) {
     return true;
 }
 
-// Adds necessary parenthesis and resolves operation precedence for the main
-// function MUST receive a string with no blanks
+// Adds necessary parenthesis and resolves operation precedence for the main, input can not have blanks
 char *evaluateOperatorPrecedence(char *input, int *operatorList, calculatorErr *error) {
     // Make a copy of the original string to modify it
     int size = stringSize(input);
@@ -806,6 +819,7 @@ char *evaluateOperatorPrecedence(char *input, int *operatorList, calculatorErr *
     return str;
 }
 
+// Traverses through the binary tree, solving the childen nodes
 void solveInfixBinTree(operationNode *node, calculatorErr *error) {
     if (!node || error->raised)
         return;
@@ -836,6 +850,7 @@ void solveInfixBinTree(operationNode *node, calculatorErr *error) {
     node->result = node->operation(node->atomicA, node->atomicB, error);
 }
 
+// Main function for the infix calculator
 float infixCalculator(char *str, calculatorErr *error) {
     // Check if input string is valid
     if (!isInputValidForInfix(str, error)) {
@@ -904,17 +919,20 @@ float infixCalculator(char *str, calculatorErr *error) {
     return result;
 }
 
+// Main function for the reverse polish calculator
 float reversePolishCalculator(char *str, calculatorErr *error) {
     initStack(error);
     if (error->raised) {
+        destroyStack();
         return -1;
     }
 
     float res = solveRevPolString(str, error);
     if (error->raised) {
+        destroyStack();
         return -1;
     }
 
-    resetStack(error);
+    destroyStack();
     return res;
 }

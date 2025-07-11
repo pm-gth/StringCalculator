@@ -22,14 +22,7 @@
 
 #include "calculator.h"
 #include <stdbool.h>
-/*
-    Práctica estándar en C, dos headers, uno con las variables y métodos
-   públicos, el otro con los privados. Para evitar errores de redefinición de
-   símbolos, el header privado incluye al público, el archivo fuente (el .c)
-   solo incluye al header privado, el main.c al público
-*/
 
-// Constants and global vars
 extern const char OPERATORS[];
 extern float *stackPointer;
 extern int stackIndex;
@@ -66,6 +59,7 @@ void pushToStack(float value);
 float popFromStack(calculatorErr *error);
 void initStack(calculatorErr *);
 void resetStack(calculatorErr *error);
+void destroyStack();
 void printStack(void);
 
 float solveRevPolString(char *str, calculatorErr *error); // Internal operation of RP-calc

@@ -1,4 +1,6 @@
+build
 .gdb_history 
 .clangd 
 compile_flags.txt
 .clang-format
+compile_flags.txt

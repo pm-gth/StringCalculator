@@ -180,6 +180,9 @@ void infix_calc_works(void){
     char *str2 = "2 * 3 + 5^2";
     char *str3 = "(365+27) % 365";
     char *str4 = "(1 + 2 * 8";
+    char *str5 = "1+-";
+    char *str6 = "(1+)2";
+    char *str7 = "2+3-()9";
 
     clearError(error);
     float res = infixCalculator(str, error);
@@ -202,6 +205,18 @@ void infix_calc_works(void){
 
     clearError(error);
     float res4 = infixCalculator(str4, error);
+    TEST_ASSERT_TRUE(error->raised);
+
+    clearError(error);
+    float res5 = infixCalculator(str5, error);
+    TEST_ASSERT_TRUE(error->raised);
+
+    clearError(error);
+    float res6 = infixCalculator(str6, error);
+    TEST_ASSERT_TRUE(error->raised);
+
+    clearError(error);
+    float res7 = infixCalculator(str7, error);
     TEST_ASSERT_TRUE(error->raised);
 }
 

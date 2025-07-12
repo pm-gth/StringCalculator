@@ -31,7 +31,6 @@ typedef struct {
 calculatorErr *newError();
 void clearError(calculatorErr *error);
 void setError(calculatorErr *error, const char *fmt, ...);
-void clearError(calculatorErr *error);
 void freeError(calculatorErr *error);
 
 // Reverse-Polish calculator

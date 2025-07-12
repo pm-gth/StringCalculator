@@ -23,7 +23,6 @@
 #include "calculator.h"
 #include "myNewStrings.h"
 
-#ifdef RELEASE
 int main(void) {
   calculatorErr *error = newError();
   
@@ -50,4 +49,3 @@ int main(void) {
     free(input);
   }
 }
-#endif
